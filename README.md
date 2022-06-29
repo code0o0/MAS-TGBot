@@ -238,19 +238,19 @@ sudo apt install docker.io
 ```
 - Build Docker image:
 ```
-sudo docker build . -t mirror-bot
+sudo docker build . -t mas-tgbot
 ```
 - Run the image:
 ```
-sudo docker run -p 80:80 mirror-bot
+sudo docker run -d \
+  --name=msbot \
+  -v /docker/mrbot/download:/home/download \
+  -v /docker/mrbot/config:/home/config \
+  -p 11000:11000 \
+  --restart on-failure \
+  mirror-bot:latest
 ```
-- To stop the image:
-```
-sudo docker ps
-```
-```
-sudo docker stop id
-```
+
 
 ----
 
