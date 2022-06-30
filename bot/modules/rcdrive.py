@@ -168,8 +168,8 @@ def rcpath_input_callback(update, context):
         dest_dir = ospath.join('/', text)
         USER_Drive[user_id]['dest_dir'] = text
         DbManger().drive_destdir_update(user_id, dest_dir)
-        sendMessage(f"Path changed to {escape(dest_dir)}", context.bot, msg)
-        Thread(target=auto_delete_message, args=(context.bot, msg, msg.reply_to_message)).start()
+        reply_message = sendMessage(f"Path changed to {escape(dest_dir)}", context.bot, msg)
+        Thread(target=auto_delete_message, args=(context.bot, msg, reply_message)).start()
         return ConversationHandler.END
 
 
@@ -209,8 +209,8 @@ def receive_config (update, context):
             drive_letter = sections[0]
             USER_Drive[user_id] = {'rc_conf_path': rc_conf_path, 'drive_letter': drive_letter, 'dest_dir': '/'}
             DbManger().drive_add(user_id, rc_conf_path, drive_letter, '/')
-            sendMessage(f"Rclone config file added successfully!\nDrive letter: {drive_letter}\nDestination directory: {escape('/')}", context.bot, msg)
-            Thread(target=auto_delete_message, args=(context.bot, msg, msg.reply_to_message)).start()
+            reply_message = sendMessage(f"Rclone config file added successfully!\nDrive letter: {drive_letter}\nDestination directory: {escape('/')}", context.bot, msg)
+            Thread(target=auto_delete_message, args=(context.bot, msg, reply_message)).start()
             return ConversationHandler.END
     except Exception as e:
         LOGGER.error(e)
