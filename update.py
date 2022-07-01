@@ -30,7 +30,7 @@ except:
     pass
 
 if ospath.exists('./config/config.env') and not ospath.exists('/home/config/config.env'):
-    shutil.move('./config','/home/config')
+    shutil.move('./config/config.env','/home/config/config.env')
 
 load_dotenv('/home/config/config.env', override=True)
 
