@@ -248,7 +248,7 @@ sudo docker run -d \
   -v /docker/mrbot/config:/home/config \
   -p 11000:11000 \
   --restart on-failure \
-  mirror-bot:latest
+  mas-tgbot:latest
 ```
 
 
