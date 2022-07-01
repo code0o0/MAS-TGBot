@@ -130,8 +130,6 @@ br><br>
 <br><br>
 <b>/{BotCommands.LeechSetCommand}</b>: Leech settings
 <br><br>
-<b>/{BotCommands.SetThumbCommand}</b>: Reply photo to set it as Thumbnail
-<br><br>
 <b>/{BotCommands.RssListCommand}</b>: List all subscribed rss feed info
 <br><br>
 <b>/{BotCommands.RssGetCommand}</b>: [Title] [Number](last N links): Force fetch last N links
@@ -197,7 +195,6 @@ botcmds = [
         (f'{BotCommands.CancelAllCommand}','Cancel all downloading tasks'),
         (f'{BotCommands.ListCommand}','Search in Drive'),
         (f'{BotCommands.LeechSetCommand}','Leech settings'),
-        (f'{BotCommands.SetThumbCommand}','Set thumbnail'),
         (f'{BotCommands.InfoCommand}','Show message'),
         (f'{BotCommands.StatusCommand}','Get mirror status message'),
         (f'{BotCommands.StatsCommand}','Bot usage stats'),

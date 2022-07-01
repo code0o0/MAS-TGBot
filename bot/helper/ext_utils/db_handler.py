@@ -27,8 +27,7 @@ class DbManger:
                  sudo int DEFAULT 0,
                  auth int DEFAULT 0,
                  media int DEFAULT 0,
-                 doc int DEFAULT 0,
-                 thumb blob DEFAULT NULL
+                 doc int DEFAULT 0
               )
               """
         self.cur.execute(sql)
@@ -68,12 +67,6 @@ class DbManger:
                     AS_MEDIA_USERS.add(row[0])
                 elif row[4]:
                     AS_DOC_USERS.add(row[0])
-                path = f"Thumbnails/{row[0]}.jpg"
-                if row[5] is not None and not ospath.exists(path):
-                    if not ospath.exists('Thumbnails'):
-                        makedirs('Thumbnails')
-                    with open(path, 'wb+') as f:
-                        f.write(row[5])
             LOGGER.info("Users data has been imported from Database")
         # Rss Data
         self.cur.execute("SELECT * FROM rss")
@@ -159,28 +152,6 @@ class DbManger:
             sql = 'INSERT INTO users (uid, doc) VALUES ({}, 1)'.format(user_id)
         else:
             sql = 'UPDATE users SET media = FALSE, doc = 1 WHERE uid = {}'.format(user_id)
-        self.cur.execute(sql)
-        self.conn.commit()
-        self.disconnect()
-
-    def user_save_thumb(self, user_id: int, path):
-        if self.err:
-            return
-        image = open(path, 'rb+')
-        image_bin = image.read()
-        if not self.user_check(user_id):
-            sql = 'INSERT INTO users (thumb, uid) VALUES (?, ?)'
-        else:
-            sql = 'UPDATE users SET thumb = ? WHERE uid = ?'
-        self.cur.execute(sql, (image_bin, user_id))
-        self.conn.commit()
-        self.disconnect()
-
-    def user_rm_thumb(self, user_id: int, path):
-        if self.err:
-            return
-        elif self.user_check(user_id):
-            sql = 'UPDATE users SET thumb = NULL WHERE uid = {}'.format(user_id)
         self.cur.execute(sql)
         self.conn.commit()
         self.disconnect()

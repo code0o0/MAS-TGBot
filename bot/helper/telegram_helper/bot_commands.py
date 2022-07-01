@@ -32,7 +32,6 @@ class _BotCommands:
         self.DeleteCommand = f'del{CMD_INDEX}'
         self.ShellCommand = f'shell{CMD_INDEX}'
         self.LeechSetCommand = f'leechset{CMD_INDEX}'
-        self.SetThumbCommand = f'setthumb{CMD_INDEX}'
         self.RssListCommand = f'rsslist{CMD_INDEX}'
         self.RssGetCommand = f'rssget{CMD_INDEX}'
         self.RssSubCommand = f'rsssub{CMD_INDEX}'

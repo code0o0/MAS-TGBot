@@ -20,7 +20,7 @@ def rclone_buttons(update, context):
     buttons.sbutton("Delete config", f"RCdelete_{user_id}")
     buttons.sbutton("Switch drive", f"RCdrive_{user_id}")
     buttons.sbutton("Switch path", f"RCpath_{user_id}")
-    buttons.sbutton('Cancel', f"RCcancel_{user_id}")
+    buttons.sbutton('Quit', f"RCcancel_{user_id}")
     button = InlineKeyboardMarkup(buttons.build_menu(2))
     msg_text =""
     if not USER_Drive.get(user_id):

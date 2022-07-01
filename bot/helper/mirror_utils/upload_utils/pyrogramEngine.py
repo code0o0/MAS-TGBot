@@ -30,7 +30,7 @@ class TgUploader:
         self.__total_files = 0
         self.__is_cancelled = False
         self.__as_doc = AS_DOCUMENT
-        self.__thumb = f"Thumbnails/{listener.message.from_user.id}.jpg"
+        self.__thumb = None
         self.__sent_msg = None
         self.__msgs_dict = {}
         self.__corrupted = 0
@@ -171,8 +171,6 @@ class TgUploader:
             self.__as_doc = True
         elif self.__listener.message.from_user.id in AS_MEDIA_USERS:
             self.__as_doc = False
-        if not ospath.lexists(self.__thumb):
-            self.__thumb = None
 
     @property
     def speed(self):
