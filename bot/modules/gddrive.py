@@ -83,6 +83,11 @@ def gddelete_yes_callback(update, context):
             query.answer()
             USER_GdDrive.clear()
             DbManger().gddrive_delete()
+            srun
+
+
+
+
             msg_text = "Deleting google deive config..."
         except Exception as e:
             LOGGER.error(e)
@@ -176,6 +181,7 @@ def gdadd_receive_sa_callback(update, context):
         sa_zip_path = ospath.join(CONFIG_DIR, 'accounts.zip')
         tg_file.download(sa_zip_path)
         sa_dir = ospath.join(CONFIG_DIR, 'accounts')
+        srun(["rm", "-rf", sa_dir])
         srun(["unzip", "-q", "-o", sa_zip_path])
         srun(["chmod", "-R", "777", sa_dir])
         osremove(f"{sa_zip_path}")
