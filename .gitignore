@@ -7,8 +7,5 @@ data*
 *.json
 *.pickle
 .netrc
-log.txt
-accounts/*
 Thumbnails/*
-drive_folder
 cookies.txt
