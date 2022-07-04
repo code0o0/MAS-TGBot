@@ -23,9 +23,6 @@ from bot.helper.ext_utils.fs_utils import get_mime_type, get_path_size
 LOGGER = getLogger(__name__)
 getLogger('googleapiclient.discovery').setLevel(ERROR)
 
-if USER_GdDrive.get('isservice_account'):
-    SERVICE_ACCOUNT_INDEX = randrange(len(listdir(USER_GdDrive.get('account_path'))))
-
 
 class GoogleDriveHelper:
 
@@ -64,6 +61,8 @@ class GoogleDriveHelper:
         self.transferred_size = 0
         self.__sa_count = 0
         self.alt_auth = False
+        if USER_GdDrive.get('isservice_account'):
+            self.SERVICE_ACCOUNT_INDEX = randrange(len(listdir(USER_GdDrive.get('account_path'))))
 
     @property
     def speed(self):
@@ -133,13 +132,12 @@ class GoogleDriveHelper:
             return msg
 
     def __switchServiceAccount(self):
-        global SERVICE_ACCOUNT_INDEX
         service_account_count = len(listdir(USER_GdDrive.get('account_path')))
-        if SERVICE_ACCOUNT_INDEX == service_account_count - 1:
-            SERVICE_ACCOUNT_INDEX = 0
+        if self.SERVICE_ACCOUNT_INDEX == service_account_count - 1:
+            self.SERVICE_ACCOUNT_INDEX = 0
         self.__sa_count += 1
-        SERVICE_ACCOUNT_INDEX += 1
-        LOGGER.info(f"Switching to {SERVICE_ACCOUNT_INDEX}.json service account")
+        self.SERVICE_ACCOUNT_INDEX += 1
+        LOGGER.info(f"Switching to {self.SERVICE_ACCOUNT_INDEX}.json service account")
         self.__service = self.__authorize()
 
     @retry(wait=wait_exponential(multiplier=2, min=3, max=6), stop=stop_after_attempt(3),
@@ -465,9 +463,9 @@ class GoogleDriveHelper:
             else:
                 LOGGER.error('token.pickle not found!')
         else:
-            LOGGER.info(f"Authorizing with {SERVICE_ACCOUNT_INDEX}.json service account")
+            LOGGER.info(f"Authorizing with {self.SERVICE_ACCOUNT_INDEX}.json service account")
             credentials = service_account.Credentials.from_service_account_file(
-                ospath.join(USER_GdDrive.get('account_path'), SERVICE_ACCOUNT_INDEX + '.json'),
+                ospath.join(USER_GdDrive.get('account_path'), self.SERVICE_ACCOUNT_INDEX + '.json'),
                 scopes=self.__OAUTH_SCOPE)
         return build('drive', 'v3', credentials=credentials, cache_discovery=False)
 
