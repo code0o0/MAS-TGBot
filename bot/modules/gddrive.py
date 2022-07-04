@@ -22,13 +22,15 @@ def gdrive_buttons(update, context):
     buttons.sbutton('Quit', f"GDcancel_{user_id}")
     button = InlineKeyboardMarkup(buttons.build_menu(2))
     msg_text =""
-    if not USER_GdDrive.get('parent_id'):
+    if not USER_GdDrive.get('parent_id') or not (USER_GdDrive.get('account_path') and ospath.exists(USER_GdDrive.get('account_path'))) or not (USER_GdDrive.get('token_path') and ospath.exists(USER_GdDrive.get('token_path'))):
+        msg_text = "Google Drive configured!"
         msg_text = "G-drive not setting!\nPlease add google drive account."
     else:
         account = oslistdir(USER_GdDrive.get('account_path'))
         msg_text += f"Current G-drive config state:\n<b>FolderID: </b><code>{USER_GdDrive.get('parent_id')}</code>\n"
         msg_text += f"<b>TeamDrive: </b><code>{USER_GdDrive.get('isteam_drive')}</code>\n"
-        msg_text += f"<b>Account: </b><code>{len(account)}</code>\n"
+        if USER_GdDrive.get('account_path'):
+            msg_text += f"<b>Account: </b><code>{len(account)}</code>\n"
     sendMarkup(msg_text, context.bot, update.message, button)
     return FIRST
 
