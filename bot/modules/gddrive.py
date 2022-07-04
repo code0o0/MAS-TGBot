@@ -8,7 +8,7 @@ from bot.helper.telegram_helper import button_build
 from bot.helper.ext_utils.db_handler import DbManger
 from threading import Thread
 from subprocess import run as srun
-from os import path as ospath, remove as osremove, listdirs as oslistdirs
+from os import path as ospath, remove as osremove, listdir as oslistdir
 
 FIRST, SECOND, THIRD, FOURTH = range(4)
 mesg_dict = {}
@@ -25,7 +25,7 @@ def gdrive_buttons(update, context):
     if not USER_GdDrive.get('parent_id'):
         msg_text = "G-drive not setting!\nPlease add google drive account."
     else:
-        account = oslistdirs(USER_GdDrive.get('account_path'))
+        account = oslistdir(USER_GdDrive.get('account_path'))
         msg_text += f"Current G-drive config state:\n<b>FolderID: </b><code>{USER_GdDrive.get('parent_id')}</code>\n"
         msg_text += f"<b>TeamDrive: </b><code>{USER_GdDrive.get('isteam_drive')}</code>\n"
         msg_text += f"<b>Account: </b><code>{len(account)}</code>\n"
