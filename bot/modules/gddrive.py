@@ -22,7 +22,7 @@ def gdrive_buttons(update, context):
     buttons.sbutton('Quit', f"GDcancel_{user_id}")
     button = InlineKeyboardMarkup(buttons.build_menu(2))
     msg_text =""
-    if not USER_GdDrive.get('parent_id') or not (USER_GdDrive.get('account_path') and ospath.exists(USER_GdDrive.get('account_path'))) or not (USER_GdDrive.get('token_path') and ospath.exists(USER_GdDrive.get('token_path'))):
+    if not USER_GdDrive.get('parent_id'):
         msg_text = "Google Drive configured!"
         msg_text = "G-drive not setting!\nPlease add google drive account."
     else:
@@ -85,11 +85,6 @@ def gddelete_yes_callback(update, context):
             query.answer()
             USER_GdDrive.clear()
             DbManger().gddrive_delete()
-            srun
-
-
-
-
             msg_text = "Deleting google deive config..."
         except Exception as e:
             LOGGER.error(e)
@@ -183,7 +178,7 @@ def gdadd_receive_sa_callback(update, context):
         sa_zip_path = ospath.join(CONFIG_DIR, 'accounts.zip')
         tg_file.download(sa_zip_path)
         sa_dir = ospath.join(CONFIG_DIR, 'accounts')
-        srun(["unzip", "-q", "-o", sa_zip_path])
+        srun(["unzip", "-q", "-o", sa_zip_path , "-d", CONFIG_DIR])
         srun(["chmod", "-R", "777", sa_dir])
         osremove(f"{sa_zip_path}")
         mesg_dict['account_path'] = sa_dir
