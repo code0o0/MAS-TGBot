@@ -1,7 +1,7 @@
 FROM ubuntu:20.04
 
 WORKDIR /usr/src/app
-RUN chmod 777 /usr/src/app
+RUN chmod 777 /usr/src/app && chmod 777 /home/config
 
 RUN apt-get -y update && DEBIAN_FRONTEND="noninteractive" \
     apt-get install -y python3.8 python3-pip aria2 wget qbittorrent-nox \
