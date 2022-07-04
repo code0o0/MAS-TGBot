@@ -14,7 +14,7 @@ from telegram import InlineKeyboardMarkup
 
 from bot import Interval, INDEX_URL, VIEW_LINK, aria2, QB_SEED, dispatcher, DOWNLOAD_DIR, \
     download_dict, download_dict_lock, TG_SPLIT_SIZE, LOGGER, DB_URI, INCOMPLETE_TASK_NOTIFIER, \
-        parent_id, EXTENSION_FILTER, HHD_DIR, USER_Drive
+    EXTENSION_FILTER, HHD_DIR, USER_RcDrive, USER_GdDrive
 from bot.helper.ext_utils.bot_utils import is_url, is_magnet, is_gdtot_link, is_mega_link, is_gdrive_link, get_content_type, get_readable_file_size
 from bot.helper.ext_utils.fs_utils import get_base_name, get_path_size, split_file, clean_download, get_mime_type
 from bot.helper.ext_utils.exceptions import DirectDownloadLinkException, NotSupportedExtractionArchive
@@ -282,8 +282,8 @@ class MirrorListener:
         elif self.uptype == 'rcdrive':
             msg += f'\n\n<b>Type: </b>{typ}'
             user_id = self.message.from_user.id
-            dest_dir = USER_Drive.get(user_id)['dest_dir']
-            drive_lette = USER_Drive.get(user_id)['drive_letter']
+            dest_dir = USER_RcDrive.get(user_id)['dest_dir']
+            drive_lette = USER_RcDrive.get(user_id)['drive_letter']
             drive_path = ospath.join(dest_dir, name)
             drive_path = b64encode(drive_path.encode()).decode('utf-8')
             msg += f'\n\n<b>Path: </b><code>RcDride:{drive_lette}.{drive_path}</code>'
@@ -560,7 +560,7 @@ def _button_callback(update, context):
         del listener_dict[task_id]
         return editMessage(f"The download has been canceled.", msg)
     elif data[1] == "gdrive":
-        if parent_id == '':
+        if not USER_GdDrive.get('parent_id'):
             return query.answer(text="G-drive not setting!", show_alert=True)
         else:
             query.answer()
@@ -571,7 +571,7 @@ def _button_callback(update, context):
         query.message.delete()
         uptype='tgdrive'
     elif data[1] == "rcdrive":
-        if not USER_Drive.get(user_id):
+        if not USER_RcDrive.get(user_id):
             return query.answer(text="Rclone config not setting! Please enter /rcdrive to complete rclone init.", show_alert=True)
         else:
             query.answer()

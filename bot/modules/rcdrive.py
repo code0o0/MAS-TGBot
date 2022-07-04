@@ -1,7 +1,7 @@
 from configparser import ConfigParser
 from telegram import InlineKeyboardMarkup
 from telegram.ext import CommandHandler, CallbackQueryHandler, ConversationHandler, MessageHandler, Filters
-from bot import LOGGER, dispatcher, USER_Drive, CONFIG_DIR
+from bot import LOGGER, dispatcher, USER_RcDrive, CONFIG_DIR
 from bot.helper.telegram_helper.message_utils import editMessage, sendMarkup, auto_delete_message, sendMessage
 from bot.helper.telegram_helper.filters import CustomFilters
 from bot.helper.telegram_helper.bot_commands import BotCommands
@@ -23,15 +23,15 @@ def rclone_buttons(update, context):
     buttons.sbutton('Quit', f"RCcancel_{user_id}")
     button = InlineKeyboardMarkup(buttons.build_menu(2))
     msg_text =""
-    if not USER_Drive.get(user_id):
+    if not USER_RcDrive.get(user_id):
         msg_text = "You have not added the rclone config file yet.\nPlease add your rclone config file."
     else:
-        rc_conf_path = USER_Drive.get(user_id)['rc_conf_path']
+        rc_conf_path = USER_RcDrive.get(user_id)['rc_conf_path']
         config = ConfigParser()
         config.read(rc_conf_path)
         sections = config.sections()
-        msg_text += f"Current rclone config state:\n<b>Drive: </b><code>{USER_Drive.get(user_id)['drive_letter']}</code>\n"
-        msg_text += f"<b>Path: </b><code>{USER_Drive.get(user_id)['dest_dir']}</code>\n"
+        msg_text += f"Current rclone config state:\n<b>Drive: </b><code>{USER_RcDrive.get(user_id)['drive_letter']}</code>\n"
+        msg_text += f"<b>Path: </b><code>{USER_RcDrive.get(user_id)['dest_dir']}</code>\n"
         msg_text += f"<b>Total: </b><code>{len(sections)}</code>\n"
     sendMarkup(msg_text, context.bot, update.message, button)
     return FIRST
@@ -60,7 +60,7 @@ def rcdelete_callback(update, context):
     if user_id != int(data[1]):
         query.answer(text="Not Yours!", show_alert=True)
         return FIRST
-    if not USER_Drive.get(user_id):
+    if not USER_RcDrive.get(user_id):
         query.answer(text="You have not added the rclone config file ", show_alert=True)
         return FIRST
     else:
@@ -84,8 +84,8 @@ def rcdelete_yes_callback(update, context):
     else:
         try:
             query.answer()
-            del USER_Drive[user_id]
-            DbManger().drive_delete(user_id)
+            del USER_RcDrive[user_id]
+            DbManger().rcdrive_delete(user_id)
             msg_text = "Deleting rclone config file..."
         except Exception as e:
             LOGGER.error(e)
@@ -103,12 +103,12 @@ def rcdrive_callback(update, context):
     if user_id != int(data[1]):
         query.answer(text="Not Yours!", show_alert=True)
         return FIRST
-    if not USER_Drive.get(user_id):
+    if not USER_RcDrive.get(user_id):
         query.answer(text="You have not added the rclone config file ", show_alert=True)
         return FIRST
     else:
         query.answer()
-        rc_conf_path = USER_Drive.get(user_id)['rc_conf_path']
+        rc_conf_path = USER_RcDrive.get(user_id)['rc_conf_path']
         config = ConfigParser()
         config.read(rc_conf_path)
         sections = config.sections()
@@ -117,7 +117,7 @@ def rcdrive_callback(update, context):
             buttons.sbutton(section, f"RCselect_{section}_{user_id}")
         buttons.sbutton("Cancel", f"RCcancel_{user_id}")
         button = InlineKeyboardMarkup(buttons.build_menu(2))
-        msg_text = f"""Default section of rclone config: <b>{USER_Drive.get(user_id)['drive_letter']}</b>\nPlease choose you want to use:"""
+        msg_text = f"""Default section of rclone config: <b>{USER_RcDrive.get(user_id)['drive_letter']}</b>\nPlease choose you want to use:"""
         editMessage(msg_text, msg, button)
         return SECOND
 
@@ -132,8 +132,8 @@ def rcdrive_select_callback(update, context):
     else:
         query.answer()
         selection = data[1]
-        USER_Drive[user_id]['drive_letter'] = selection
-        DbManger().drive_letter_update(user_id, selection)
+        USER_RcDrive[user_id]['drive_letter'] = selection
+        DbManger().rcdrive_letter_update(user_id, selection)
         editMessage(f"Drive letter changed to {selection}", msg)
         Thread(target=auto_delete_message, args=(context.bot, msg, msg.reply_to_message)).start()
         return ConversationHandler.END
@@ -147,12 +147,12 @@ def rcpath_callback(update, context):
     if user_id != int(data[1]):
         query.answer(text="Not Yours!", show_alert=True)
         return FIRST
-    if not USER_Drive.get(user_id):
+    if not USER_RcDrive.get(user_id):
         query.answer(text="You have not added the rclone config file ", show_alert=True)
         return FIRST
     else:
         query.answer()
-        dest_dir = escape(USER_Drive.get(user_id)['dest_dir'])
+        dest_dir = escape(USER_RcDrive.get(user_id)['dest_dir'])
         msg_text = f"Default path of rclone upload: <b>{dest_dir}</b>\nPlease input the new path:"
         editMessage(msg_text, msg)
         return SECOND
@@ -166,8 +166,8 @@ def rcpath_input_callback(update, context):
         return SECOND
     else:
         dest_dir = ospath.join('/', text)
-        USER_Drive[user_id]['dest_dir'] = text
-        DbManger().drive_destdir_update(user_id, dest_dir)
+        USER_RcDrive[user_id]['dest_dir'] = text
+        DbManger().rcdrive_destdir_update(user_id, dest_dir)
         reply_message = sendMessage(f"Path changed to {escape(dest_dir)}", context.bot, msg)
         Thread(target=auto_delete_message, args=(context.bot, msg, reply_message)).start()
         return ConversationHandler.END
@@ -207,8 +207,8 @@ def receive_config (update, context):
                 osremove(rc_conf_path)
             osrename(rc_conf_path + '.tmp', rc_conf_path)
             drive_letter = sections[0]
-            USER_Drive[user_id] = {'rc_conf_path': rc_conf_path, 'drive_letter': drive_letter, 'dest_dir': '/'}
-            DbManger().drive_add(user_id, rc_conf_path, drive_letter, '/')
+            USER_RcDrive[user_id] = {'rc_conf_path': rc_conf_path, 'drive_letter': drive_letter, 'dest_dir': '/'}
+            DbManger().rcdrive_add(user_id, rc_conf_path, drive_letter, '/')
             reply_message = sendMessage(f"Rclone config file added successfully!\nDrive letter: {drive_letter}\nDestination directory: {escape('/')}", context.bot, msg)
             Thread(target=auto_delete_message, args=(context.bot, msg, reply_message)).start()
             return ConversationHandler.END

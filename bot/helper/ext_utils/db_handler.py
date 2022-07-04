@@ -1,6 +1,6 @@
 from os import path as ospath, makedirs
 from sqlite3 import connect, DatabaseError
-from bot import DB_URI, AUTHORIZED_CHATS, SUDO_USERS, AS_DOC_USERS, AS_MEDIA_USERS, rss_dict, LOGGER, botname, USER_Drive
+from bot import DB_URI, AUTHORIZED_CHATS, SUDO_USERS, AS_DOC_USERS, AS_MEDIA_USERS, rss_dict, LOGGER, botname, USER_RcDrive, USER_GdDrive
 
 class DbManger:
     def __init__(self):
@@ -40,11 +40,20 @@ class DbManger:
               )
               """
         self.cur.execute(sql)
-        sql = """CREATE TABLE IF NOT EXISTS drive (
+        sql = """CREATE TABLE IF NOT EXISTS rcdrive (
                  uid bigint,
                  rc_conf_path text,
                  drive_letter text,
                  dest_dir text
+              )
+              """
+        self.cur.execute(sql)
+        sql = """CREATE TABLE IF NOT EXISTS gddrive (
+                 parent_id text,
+                 isteam_drive int DEFAULT 0,
+                 isservice_account int DEFAULT 0,
+                 account_path text,
+                 token_path text
               )
               """
         self.cur.execute(sql)
@@ -81,13 +90,25 @@ class DbManger:
                         f_lists.append(y)
                 rss_dict[row[0]] = [row[1], row[2], row[3], f_lists]
             LOGGER.info("Rss data has been imported from Database.")
-        # Drive Data
-        self.cur.execute("SELECT * FROM drive")
+        # Rcdrive Data
+        self.cur.execute("SELECT * FROM rcdrive")
         rows = self.cur.fetchall()  # return a list ==> (uid, rc_conf_path, drive_letter, dest_dir)
         if rows:
             for row in rows:
-                USER_Drive[row[0]] ={'rc_conf_path':row[1],'drive_letter':row[2], 'dest_dir':row[3]}
-            LOGGER.info("Drive data has been imported from Database.")
+                USER_RcDrive[row[0]] ={'rc_conf_path':row[1],'drive_letter':row[2], 'dest_dir':row[3]}
+            LOGGER.info("Rcdrive data has been imported from Database.")
+        
+        # Gddrive Data
+        self.cur.execute("SELECT * FROM gddrive")
+        rows = self.cur.fetchall()  # return a list ==> (parent_id, isteam_drive, account_path, token_path)
+        if rows:
+            for row in rows:
+                USER_GdDrive['parent_id'] = row[0]
+                USER_GdDrive['isteam_drive'] = True if row[1] else False
+                USER_GdDrive['isservice_account'] = True if row[2] else False
+                USER_GdDrive['account_path'] = row[3]
+                USER_GdDrive['token_path'] = row[4]
+            LOGGER.info("Gddrive data has been imported from Database.")
         self.disconnect()
 
     def user_auth(self, chat_id: int):
@@ -186,42 +207,56 @@ class DbManger:
         self.disconnect()
     
 
-    def drive_add(self, uid, rc_conf_path, drive_letter, dest_dir):
+    def rcdrive_add(self, uid, rc_conf_path, drive_letter, dest_dir):
         if self.err:
             return "Error in DB connection, check log for details"
         q = (rc_conf_path, drive_letter, dest_dir, uid)
-        self.cur.execute("SELECT * FROM drive WHERE uid = {}".format(uid))
+        self.cur.execute("SELECT * FROM rcdrive WHERE uid = {}".format(uid))
         res = self.cur.fetchone()
         if not res:
-            self.cur.execute("INSERT INTO drive (rc_conf_path, drive_letter, dest_dir, uid) VALUES (?, ?, ?, ?)", q)
+            self.cur.execute("INSERT INTO rcdrive (rc_conf_path, drive_letter, dest_dir, uid) VALUES (?, ?, ?, ?)", q)
         else:
-            self.cur.execute("UPDATE drive SET rc_conf_path = ?, drive_letter = ?, dest_dir = ? WHERE uid = ?", q)
+            self.cur.execute("UPDATE rcdrive SET rc_conf_path = ?, drive_letter = ?, dest_dir = ? WHERE uid = ?", q)
         self.conn.commit()
         self.disconnect()
     
-    def drive_delete(self, uid):
+    def rcdrive_delete(self, uid):
         if self.err:
             return "Error in DB connection, check log for details"
-        self.cur.execute("DELETE FROM drive WHERE uid = {}".format(uid))
+        self.cur.execute("DELETE FROM rcdrive WHERE uid = {}".format(uid))
         self.conn.commit()
         self.disconnect()
 
-    def drive_letter_update(self, uid, drive_letter):
+    def rcdrive_letter_update(self, uid, drive_letter):
         if self.err:
             return "Error in DB connection, check log for details"
         q = (drive_letter, uid)
-        self.cur.execute("UPDATE drive SET drive_letter = ? WHERE uid = ?", q)
+        self.cur.execute("UPDATE rcdrive SET drive_letter = ? WHERE uid = ?", q)
         self.conn.commit()
         self.disconnect()
     
-    def drive_destdir_update(self, uid, dest_dir):
+    def rcdrive_destdir_update(self, uid, dest_dir):
         if self.err:
             return "Error in DB connection, check log for details"
         q = (dest_dir, uid)
-        self.cur.execute("UPDATE drive SET dest_dir = ? WHERE uid = ?", q)
+        self.cur.execute("UPDATE rcdrive SET dest_dir = ? WHERE uid = ?", q)
         self.conn.commit()
         self.disconnect()
-
+    
+    def gddrive_add(self, parent_id, isteam_drive, isservice_account, account_path, token_path):
+        if self.err:
+            return "Error in DB connection, check log for details"
+        q = (parent_id, isteam_drive, isservice_account, account_path, token_path)
+        self.cur.execute("INSERT INTO gddrive (parent_id, isteam_drive, isservice_account, account_path, token_path) VALUES (?, ?, ?, ?, ?)", q)
+        self.conn.commit()
+        self.disconnect()
+    
+    def gddrive_delete(self):
+        if self.err:
+            return "Error in DB connection, check log for details"
+        self.cur.execute("DELETE FROM gddrive")
+        self.conn.commit()
+        self.disconnect()
 
     def add_incomplete_task(self, cid: int, link: str, tag: str):
         if self.err:

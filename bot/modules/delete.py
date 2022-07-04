@@ -1,7 +1,7 @@
 from threading import Thread
 from telegram.ext import CommandHandler
 from base64 import b64decode
-from bot import dispatcher, LOGGER, HHD_DIR, USER_Drive
+from bot import dispatcher, LOGGER, HHD_DIR, USER_RcDrive
 from bot.helper.telegram_helper.message_utils import auto_delete_message, sendMessage
 from bot.helper.telegram_helper.filters import CustomFilters
 from bot.helper.telegram_helper.bot_commands import BotCommands
@@ -31,8 +31,8 @@ def delete_file(update, context):
         _drive, _name = link.strip('RcDride:').split('.', maxsplit=1)
         try:
             _pathname = b64decode(_name).decode('utf-8')
-            if len(_pathname) > len(USER_Drive.get(user_id)['dest_dir']):
-                srun(['rclone', 'purge', f"--config={USER_Drive.get(user_id)['rc_conf_path']}", f"{_drive}:{_pathname}"])
+            if len(_pathname) > len(USER_RcDrive.get(user_id)['dest_dir']):
+                srun(['rclone', 'purge', f"--config={USER_RcDrive.get(user_id)['rc_conf_path']}", f"{_drive}:{_pathname}"])
                 msg = f'{escape(ospath.split(_pathname)[-1])} have been deleted'
             else:
                 msg = "Root folder can not delete"

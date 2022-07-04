@@ -13,7 +13,6 @@ from threading import Thread, Lock
 from dotenv import load_dotenv
 from pyrogram import Client, enums
 from asyncio import get_event_loop
-from configparser import ConfigParser
 
 main_loop = get_event_loop()
 
@@ -83,75 +82,7 @@ DB_URI = '/home/config/data.db'
 
 
 # UPLOAD G-DRIVE
-IS_TEAM_DRIVE = getConfig('IS_TEAM_DRIVE')
-if IS_TEAM_DRIVE.lower() == 'true':
-    IS_TEAM_DRIVE = True
-else:
-    IS_TEAM_DRIVE = False
-try:
-    parent_id = getConfig('GDRIVE_FOLDER_ID')
-    if not value:
-        raise KeyError
-except:
-    log_error("One or more UPLOAD G-DRIVE variables missing! Exiting now")
-    exit(1)
-
-USE_SERVICE_ACCOUNTS = getConfig('USE_SERVICE_ACCOUNTS')
-if USE_SERVICE_ACCOUNTS.lower() == 'true':
-    USE_SERVICE_ACCOUNTS = True
-else:
-    USE_SERVICE_ACCOUNTS = False
-try:
-    ACCOUNTS_ZIP_URL = getConfig('ACCOUNTS_ZIP_URL')
-    if not ACCOUNTS_ZIP_URL:
-        raise KeyError
-    try:
-        res = rget(ACCOUNTS_ZIP_URL)
-        if res.status_code == 200:
-            with open('accounts.zip', 'wb+') as f:
-                f.write(res.content)
-        else:
-            log_error(f"Failed to download accounts.zip, link got HTTP response: {res.status_code}")
-    except Exception as e:
-        log_error(f"ACCOUNTS_ZIP_URL: {e}")
-        raise KeyError
-    srun(["unzip", "-q", "-o", "accounts.zip"])
-    srun(["chmod", "-R", "777", "accounts"])
-    osremove("accounts.zip")
-except:
-    pass
-
-try:
-    TOKEN_PICKLE_URL = getConfig('TOKEN_PICKLE_URL')
-    if len(TOKEN_PICKLE_URL) == 0:
-        raise KeyError
-    try:
-        res = rget(TOKEN_PICKLE_URL)
-        if res.status_code == 200:
-            with open('token.pickle', 'wb+') as f:
-                f.write(res.content)
-        else:
-            log_error(f"Failed to download token.pickle, link got HTTP response: {res.status_code}")
-    except Exception as e:
-        log_error(f"TOKEN_PICKLE_URL: {e}")
-except:
-    pass
-
-try:
-    MULTI_SEARCH_URL = getConfig('MULTI_SEARCH_URL')
-    if len(MULTI_SEARCH_URL) == 0:
-        raise KeyError
-    try:
-        res = rget(MULTI_SEARCH_URL)
-        if res.status_code == 200:
-            with open('drive_folder', 'wb+') as f:
-                f.write(res.content)
-        else:
-            log_error(f"Failed to download drive_folder, link got HTTP response: {res.status_code}")
-    except Exception as e:
-        log_error(f"MULTI_SEARCH_URL: {e}")
-except:
-    pass
+USER_GdDrive = {}
 
 
 # UPLOAD TELEGRAM
@@ -172,46 +103,20 @@ CUSTOM_FILENAME = getConfig('CUSTOM_FILENAME', None)
 
 
 # UPLOAD RCLONE
-USER_Drive = {}
+USER_RcDrive = {}
 
 
 # DIRECT-INDEX
-INDEX_URLS = []
-DRIVES_NAMES = []
-DRIVES_IDS = []
 try:
     INDEX_URL = getConfig('INDEX_URL').rstrip("/")
     if len(INDEX_URL) == 0:
         raise KeyError
-    INDEX_URLS.append(INDEX_URL)
 except:
     INDEX_URL = None
-    INDEX_URLS.append(None)
-DRIVES_NAMES.append("Main")
-DRIVES_IDS.append(parent_id)
-if ospath.exists('drive_folder'):
-    with open('drive_folder', 'r+') as f:
-        lines = f.readlines()
-        for line in lines:
-            try:
-                temp = line.strip().split()
-                DRIVES_IDS.append(temp[1])
-                DRIVES_NAMES.append(temp[0].replace("_", " "))
-            except:
-                pass
-            try:
-                INDEX_URLS.append(temp[2])
-            except:
-                INDEX_URLS.append(None)
 
 
 # DOWNLOAD-SETTING
-STATUS_LIMIT = int(getConfig('STATUS_LIMIT', '6'))
-try:
-    STOP_DUPLICATE = getConfig('STOP_DUPLICATE')
-    STOP_DUPLICATE = STOP_DUPLICATE.lower() == 'true'
-except:
-    STOP_DUPLICATE = False
+STATUS_LIMIT = int(getConfig('STATUS_LIMIT', '4'))
 try:
     TORRENT_TIMEOUT = getConfig('TORRENT_TIMEOUT')
     if len(TORRENT_TIMEOUT) == 0:

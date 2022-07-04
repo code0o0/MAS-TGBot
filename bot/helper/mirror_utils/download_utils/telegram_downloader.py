@@ -2,10 +2,9 @@ from logging import getLogger, WARNING
 from time import time
 from threading import RLock, Lock
 
-from bot import LOGGER, download_dict, download_dict_lock, STOP_DUPLICATE, app
+from bot import LOGGER, download_dict, download_dict_lock, app
 from ..status_utils.telegram_download_status import TelegramDownloadStatus
-from bot.helper.telegram_helper.message_utils import sendMarkup, sendMessage, sendStatusMessage
-from bot.helper.mirror_utils.upload_utils.gdriveTools import GoogleDriveHelper
+from bot.helper.telegram_helper.message_utils import sendStatusMessage
 
 global_lock = Lock()
 GLOBAL_GID = set()
@@ -97,12 +96,12 @@ class TelegramDownloadHelper:
 
             if download:
                 size = media.file_size
-                if STOP_DUPLICATE and self.__listener.uptype == 'gdrive':
-                    LOGGER.info('Checking File/Folder if already in Drive...')
-                    smsg, button = GoogleDriveHelper().drive_list(name, True, True)
-                    if smsg:
-                        msg = "File/Folder is already available in Drive.\nHere are the search results:"
-                        return sendMarkup(msg, self.__listener.bot, self.__listener.message, button)
+                # if STOP_DUPLICATE and self.__listener.uptype == 'gdrive':
+                #     LOGGER.info('Checking File/Folder if already in Drive...')
+                #     smsg, button = GoogleDriveHelper().drive_list(name, True, True)
+                #     if smsg:
+                #         msg = "File/Folder is already available in Drive.\nHere are the search results:"
+                #         return sendMarkup(msg, self.__listener.bot, self.__listener.message, button)
                 self.__onDownloadStart(name, size, media.file_unique_id)
                 LOGGER.info(f'Downloading Telegram file with id: {media.file_unique_id}')
                 self.__download(_dmsg, path)

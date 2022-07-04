@@ -1,45 +1,44 @@
 from time import sleep
 
-from bot import aria2, download_dict_lock, download_dict, STOP_DUPLICATE, LOGGER
-from bot.helper.mirror_utils.upload_utils.gdriveTools import GoogleDriveHelper
+from bot import aria2, download_dict_lock, download_dict, LOGGER
 from bot.helper.ext_utils.bot_utils import is_magnet, getDownloadByGid, new_thread
 from bot.helper.mirror_utils.status_utils.aria_download_status import AriaDownloadStatus
-from bot.helper.telegram_helper.message_utils import sendMarkup, sendStatusMessage, sendMessage
-from bot.helper.ext_utils.fs_utils import get_base_name
+from bot.helper.telegram_helper.message_utils import sendStatusMessage, sendMessage
 
 
 @new_thread
 def __onDownloadStarted(api, gid):
-    try:
-        if STOP_DUPLICATE:
-            download = api.get_download(gid)
-            if download.is_metadata:
-                LOGGER.info(f'onDownloadStarted: {gid} Metadata')
-                return
-            elif not download.is_torrent:
-                sleep(3)
-                download = api.get_download(gid)
-            LOGGER.info(f'onDownloadStarted: {gid}')
-            dl = getDownloadByGid(gid)
-            if not dl or dl.getListener().uptype == 'tgdrive':
-                return
-            LOGGER.info('Checking File/Folder if already in Drive...')
-            sname = download.name
-            if dl.getListener().isZip:
-                sname = sname + ".zip"
-            elif dl.getListener().extract:
-                try:
-                    sname = get_base_name(sname)
-                except:
-                    sname = None
-            if sname is not None:
-                smsg, button = GoogleDriveHelper().drive_list(sname, True)
-                if smsg:
-                    dl.getListener().onDownloadError('File/Folder already available in Drive.\n\n')
-                    api.remove([download], force=True, files=True)
-                    return sendMarkup("Here are the search results:", dl.getListener().bot, dl.getListener().message, button)
-    except Exception as e:
-        LOGGER.error(f"{e} onDownloadStart: {gid} stop duplicate didn't pass")
+    pass
+    # try:
+    #     if STOP_DUPLICATE:
+    #         download = api.get_download(gid)
+    #         if download.is_metadata:
+    #             LOGGER.info(f'onDownloadStarted: {gid} Metadata')
+    #             return
+    #         elif not download.is_torrent:
+    #             sleep(3)
+    #             download = api.get_download(gid)
+    #         LOGGER.info(f'onDownloadStarted: {gid}')
+    #         dl = getDownloadByGid(gid)
+    #         if not dl or dl.getListener().uptype == 'tgdrive':
+    #             return
+    #         LOGGER.info('Checking File/Folder if already in Drive...')
+    #         sname = download.name
+    #         if dl.getListener().isZip:
+    #             sname = sname + ".zip"
+    #         elif dl.getListener().extract:
+    #             try:
+    #                 sname = get_base_name(sname)
+    #             except:
+    #                 sname = None
+    #         if sname is not None:
+    #             smsg, button = GoogleDriveHelper().drive_list(sname, True)
+    #             if smsg:
+    #                 dl.getListener().onDownloadError('File/Folder already available in Drive.\n\n')
+    #                 api.remove([download], force=True, files=True)
+    #                 return sendMarkup("Here are the search results:", dl.getListener().bot, dl.getListener().message, button)
+    # except Exception as e:
+    #     LOGGER.error(f"{e} onDownloadStart: {gid} stop duplicate didn't pass")
 
 @new_thread
 def __onDownloadComplete(api, gid):

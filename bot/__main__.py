@@ -17,7 +17,7 @@ from .helper.telegram_helper.message_utils import sendMessage, sendMarkup, editM
 from .helper.telegram_helper.filters import CustomFilters
 from .helper.telegram_helper.button_build import ButtonMaker
 
-from .modules import authorize, list, cancel_mirror, mirror_status, mirror, clone, watch, shell, delete, leech_settings, search, rss, rcdrive, info
+from .modules import authorize, cancel_mirror, mirror_status, mirror, clone, watch, shell, delete, leech_settings, search, rss, rcdrive, info, gddrive
 
 
 def stats(update, context):
@@ -124,7 +124,9 @@ help_string_telegraph = f'''<br>
 <br><br>
 <b>/{BotCommands.ZipWatchCommand}</b> [yt-dlp supported link]: Mirror yt-dlp supported link as zip
 br><br>
-<b>/{BotCommands.RcdriveCommand}</b>: Select rclone default config
+<b>/{BotCommands.RcdriveCommand}</b>: Set rclone default config
+br><br>
+<b>/{BotCommands.GddriveCommand}</b>: Set google drive default config
 <br><br>
 <b>/{BotCommands.InfoCommand}</b>: Show message  of the username
 <br><br>
@@ -189,11 +191,11 @@ botcmds = [
         (f'{BotCommands.WatchCommand}','Mirror yt-dlp-link n-name:xx pswd:xx [zip] args::x:y|x1:y1'),
         (f'{BotCommands.ZipWatchCommand}','Mirror yt-dlp supported link as zip'),
         (f'{BotCommands.CloneCommand}','Copy file/folder to Drive'),
-        (f'{BotCommands.RcdriveCommand}', 'Select rclone default config'),
+        (f'{BotCommands.RcdriveCommand}', 'Set rclone default config'),
+        (f'{BotCommands.GddriveCommand}', 'Set google drive default config'),
         (f'{BotCommands.DeleteCommand}','Delete file/folder from Drive'),
         (f'{BotCommands.CancelMirror}','Cancel a task'),
         (f'{BotCommands.CancelAllCommand}','Cancel all downloading tasks'),
-        (f'{BotCommands.ListCommand}','Search in Drive'),
         (f'{BotCommands.LeechSetCommand}','Leech settings'),
         (f'{BotCommands.InfoCommand}','Show message'),
         (f'{BotCommands.StatusCommand}','Get mirror status message'),

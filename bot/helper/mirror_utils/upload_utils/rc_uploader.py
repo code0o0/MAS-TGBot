@@ -4,7 +4,7 @@ from os import path as ospath
 from os import walk as oswalk
 import subprocess
 import re
-from bot import DOWNLOAD_DIR, EXTENSION_FILTER, USER_Drive
+from bot import DOWNLOAD_DIR, EXTENSION_FILTER, USER_RcDrive
 from bot.helper.ext_utils.bot_utils import get_readable_file_size, setInterval
 from bot.helper.ext_utils.fs_utils import get_mime_type, get_path_size
 
@@ -31,7 +31,7 @@ class RcUploader:
 
     def __upload_file(self, file_path, remote_path):
         sleeps = False
-        rclone_copy_cmd = ['rclone', 'copy', '-P', '--cache-chunk-size', '64Mi', '--stats', '2s', f"--config={USER_Drive.get(self.user_id)['rc_conf_path']}", str(file_path), f"{USER_Drive.get(self.user_id)['drive_letter']}:{remote_path}"]
+        rclone_copy_cmd = ['rclone', 'copy', '-P', '--cache-chunk-size', '64Mi', '--stats', '2s', f"--config={USER_RcDrive.get(self.user_id)['rc_conf_path']}", str(file_path), f"{USER_RcDrive.get(self.user_id)['drive_letter']}:{remote_path}"]
         self.rclone_pr = subprocess.Popen(rclone_copy_cmd, stdout=(subprocess.PIPE), stderr=(subprocess.PIPE))
         while True:
             if self.is_cancelled:
@@ -74,7 +74,7 @@ class RcUploader:
             if ospath.isfile(file_path):
                 mime_type = get_mime_type(file_path)
                 self.__total_files += 1
-                result = self.__upload_file(file_path, USER_Drive.get(self.user_id)['dest_dir'])
+                result = self.__upload_file(file_path, USER_RcDrive.get(self.user_id)['dest_dir'])
                 if self.is_cancelled:
                     raise Exception('Upload has been manually cancelled')
                 if result:
@@ -87,7 +87,7 @@ class RcUploader:
                         if not file.lower().endswith(tuple(EXTENSION_FILTER)):
                             self.__total_files += 1
                     self.__total_folders += len(dirs)
-                remote_path = ospath.join(USER_Drive.get(self.user_id)['dest_dir'], self.name)
+                remote_path = ospath.join(USER_RcDrive.get(self.user_id)['dest_dir'], self.name)
                 result = self.__upload_file(file_path, remote_path)
                 if self.is_cancelled:
                     raise Exception('Upload has been manually cancelled!')
@@ -104,7 +104,7 @@ class RcUploader:
             if self.is_cancelled:
                 if mime_type == 'Folder':
                     LOGGER.info("Deleting uploaded data from Drive...")
-                    subprocess.run(['rclone', 'purge', f"--config={USER_Drive.get(self.user_id)['rc_conf_path']}", f"{USER_Drive.get(self.user_id)['drive_letter']}:{remote_path}"])
+                    subprocess.run(['rclone', 'purge', f"--config={USER_RcDrive.get(self.user_id)['rc_conf_path']}", f"{USER_RcDrive.get(self.user_id)['drive_letter']}:{remote_path}"])
                 return
             elif self.is_errored:
                 return

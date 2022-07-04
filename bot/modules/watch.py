@@ -3,8 +3,7 @@ from telegram.ext import CommandHandler, CallbackQueryHandler
 from telegram import InlineKeyboardMarkup
 from time import sleep
 from re import split as re_split
-
-from bot import DOWNLOAD_DIR, dispatcher, parent_id, USER_Drive
+from bot import DOWNLOAD_DIR, dispatcher, USER_RcDrive, USER_GdDrive
 from bot.helper.telegram_helper.message_utils import sendMessage, sendMarkup, editMessage
 from bot.helper.telegram_helper import button_build
 from bot.helper.ext_utils.bot_utils import get_readable_file_size, is_url
@@ -302,7 +301,7 @@ def _button_callback(update, context):
         del listener_dict[task_id]
         return editMessage(f"The download has been canceled.", msg)
     elif data[1] == "gdrive":
-        if parent_id == '':
+        if USER_GdDrive.get('parent_id'):
             return query.answer(text="G-drive not setting!", show_alert=True)
         else:
             query.answer()
@@ -313,7 +312,7 @@ def _button_callback(update, context):
         query.message.delete()
         uptype='tgdrive'
     elif data[1] == "rcdrive":
-        if not USER_Drive.get(user_id):
+        if not USER_RcDrive.get(user_id):
             return query.answer(text="Rclone config not setting! Please enter /rcdrive to complete rclone init.", show_alert=True)
         else:
             query.answer()

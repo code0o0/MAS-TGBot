@@ -16,23 +16,21 @@ from telegram import InlineKeyboardMarkup
 from tenacity import retry, wait_exponential, stop_after_attempt, retry_if_exception_type, RetryError
 
 from bot.helper.telegram_helper.button_build import ButtonMaker
-from bot import parent_id, DOWNLOAD_DIR, IS_TEAM_DRIVE, INDEX_URL, USE_SERVICE_ACCOUNTS, VIEW_LINK, \
-                DRIVES_NAMES, DRIVES_IDS, INDEX_URLS, EXTENSION_FILTER
-from bot.helper.ext_utils.telegraph_helper import telegraph
+from bot import DOWNLOAD_DIR, INDEX_URL, VIEW_LINK, EXTENSION_FILTER, USER_GdDrive, CONFIG_DIR
 from bot.helper.ext_utils.bot_utils import get_readable_file_size, setInterval
 from bot.helper.ext_utils.fs_utils import get_mime_type, get_path_size
 
 LOGGER = getLogger(__name__)
 getLogger('googleapiclient.discovery').setLevel(ERROR)
 
-if USE_SERVICE_ACCOUNTS:
-    SERVICE_ACCOUNT_INDEX = randrange(len(listdir("accounts")))
+if USER_GdDrive.get('isservice_account'):
+    SERVICE_ACCOUNT_INDEX = randrange(len(listdir(USER_GdDrive.get('account_path'))))
 
 
 class GoogleDriveHelper:
 
     def __init__(self, name=None, listener=None):
-        self.__G_DRIVE_TOKEN_FILE = "token.pickle"
+        self.__G_DRIVE_TOKEN_FILE = USER_GdDrive.get('token_file')
         # Check https://developers.google.com/drive/scopes for all available scopes
         self.__OAUTH_SCOPE = ['https://www.googleapis.com/auth/drive']
         # Redirect URI for installed apps, can be left as is
@@ -116,7 +114,7 @@ class GoogleDriveHelper:
             return msg
         msg = ''
         try:
-            self.__service.files().delete(fileId=file_id, supportsTeamDrives=IS_TEAM_DRIVE).execute()
+            self.__service.files().delete(fileId=file_id, supportsTeamDrives=USER_GdDrive.get('isteam_drive')).execute()
             msg = "Successfully deleted"
             LOGGER.info(f"Delete Result: {msg}")
         except HttpError as err:
@@ -136,7 +134,7 @@ class GoogleDriveHelper:
 
     def __switchServiceAccount(self):
         global SERVICE_ACCOUNT_INDEX
-        service_account_count = len(listdir("accounts"))
+        service_account_count = len(listdir(USER_GdDrive.get('account_path')))
         if SERVICE_ACCOUNT_INDEX == service_account_count - 1:
             SERVICE_ACCOUNT_INDEX = 0
         self.__sa_count += 1
@@ -174,7 +172,7 @@ class GoogleDriveHelper:
                                          resumable=False)
             response = self.__service.files().create(supportsTeamDrives=True,
                                                      body=file_metadata, media_body=media_body).execute()
-            if not IS_TEAM_DRIVE:
+            if not USER_GdDrive.get('isteam_drive'):
                 self.__set_permission(response['id'])
 
             drive_file = self.__service.files().get(supportsTeamDrives=True,
@@ -203,7 +201,7 @@ class GoogleDriveHelper:
                         'dailyLimitExceeded',
                     ]:
                         raise err
-                    if USE_SERVICE_ACCOUNTS:
+                    if USER_GdDrive.get('isservice_account'):
                         self.__switchServiceAccount()
                         LOGGER.info(f"Got: {reason}, Trying Again.")
                         return self.__upload_file(file_path, file_name, mime_type, parent_id)
@@ -214,7 +212,7 @@ class GoogleDriveHelper:
             return
         self.__file_uploaded_bytes = 0
         # Insert new permissions
-        if not IS_TEAM_DRIVE:
+        if not USER_GdDrive.get('isteam_drive'):
             self.__set_permission(response['id'])
         # Define file instance and get url for download
         drive_file = self.__service.files().get(supportsTeamDrives=True, fileId=response['id']).execute()
@@ -229,6 +227,7 @@ class GoogleDriveHelper:
         size = get_readable_file_size(get_path_size(file_path))
         LOGGER.info("Uploading File: " + file_path)
         self.updater = setInterval(self.update_interval, self._on_upload_progress)
+        parent_id = USER_GdDrive.get('parent_id')
         try:
             if ospath.isfile(file_path):
                 mime_type = get_mime_type(file_path)
@@ -286,8 +285,8 @@ class GoogleDriveHelper:
             if err.resp.get('content-type', '').startswith('application/json'):
                 reason = jsnloads(err.content).get('error').get('errors')[0].get('reason')
                 if reason in ['userRateLimitExceeded', 'dailyLimitExceeded']:
-                    if USE_SERVICE_ACCOUNTS:
-                        if self.__sa_count == len(listdir("accounts")) or self.__sa_count > 50:
+                    if USER_GdDrive.get('isservice_account'):
+                        if self.__sa_count == len(listdir(USER_GdDrive.get('account_path'))) or self.__sa_count > 50:
                             self.is_cancelled = True
                             raise err
                         else:
@@ -342,6 +341,7 @@ class GoogleDriveHelper:
         try:
             meta = self.__getFileMetadata(file_id)
             mime_type = meta.get("mimeType")
+            parent_id = USER_GdDrive.get('parent_id')
             if mime_type == self.__G_DRIVE_DIR_MIME_TYPE:
                 dir_id = self.__create_directory(meta.get('name'), parent_id)
                 self.__cloneFolder(meta.get('name'), meta.get('name'), meta.get('id'), dir_id)
@@ -428,7 +428,7 @@ class GoogleDriveHelper:
             file_metadata["parents"] = [parent_id]
         file = self.__service.files().create(supportsTeamDrives=True, body=file_metadata).execute()
         file_id = file.get("id")
-        if not IS_TEAM_DRIVE:
+        if not USER_GdDrive.get('isteam_drive'):
             self.__set_permission(file_id)
         LOGGER.info("Created G-Drive Folder:\nName: {}\nID: {} ".format(file.get("name"), file_id))
         return file_id
@@ -458,7 +458,7 @@ class GoogleDriveHelper:
     def __authorize(self):
         # Get credentials
         credentials = None
-        if not USE_SERVICE_ACCOUNTS:
+        if not USER_GdDrive.get('isservice_account'):
             if ospath.exists(self.__G_DRIVE_TOKEN_FILE):
                 with open(self.__G_DRIVE_TOKEN_FILE, 'rb') as f:
                     credentials = pload(f)
@@ -467,13 +467,13 @@ class GoogleDriveHelper:
         else:
             LOGGER.info(f"Authorizing with {SERVICE_ACCOUNT_INDEX}.json service account")
             credentials = service_account.Credentials.from_service_account_file(
-                f'accounts/{SERVICE_ACCOUNT_INDEX}.json',
+                ospath.join(USER_GdDrive.get('account_path'), SERVICE_ACCOUNT_INDEX + '.json'),
                 scopes=self.__OAUTH_SCOPE)
         return build('drive', 'v3', credentials=credentials, cache_discovery=False)
 
     def __alt_authorize(self):
         credentials = None
-        if USE_SERVICE_ACCOUNTS and not self.alt_auth:
+        if USER_GdDrive.get('isservice_account') and not self.alt_auth:
             self.alt_auth = True
             if ospath.exists(self.__G_DRIVE_TOKEN_FILE):
                 LOGGER.info("Authorize with token.pickle")
@@ -482,197 +482,106 @@ class GoogleDriveHelper:
                 return build('drive', 'v3', credentials=credentials, cache_discovery=False)
         return None
 
-    def __escapes(self, str):
-        chars = ['\\', "'", '"', r'\a', r'\b', r'\f', r'\n', r'\r', r'\t']
-        for char in chars:
-            str = str.replace(char, '\\' + char)
-        return str.strip()
+    # def __escapes(self, str):
+    #     chars = ['\\', "'", '"', r'\a', r'\b', r'\f', r'\n', r'\r', r'\t']
+    #     for char in chars:
+    #         str = str.replace(char, '\\' + char)
+    #     return str.strip()
 
-    def __get_recursive_list(self, file, rootid = "root"):
-        rtnlist = []
-        if not rootid:
-            rootid = file.get('teamDriveId')
-        if rootid == "root":
-            rootid = self.__service.files().get(fileId = 'root', fields="id").execute().get('id')
-        x = file.get("name")
-        y = file.get("id")
-        while(y != rootid):
-            rtnlist.append(x)
-            file = self.__service.files().get(
-                                            fileId=file.get("parents")[0],
-                                            supportsAllDrives=True,
-                                            fields='id, name, parents'
-                                            ).execute()
-            x = file.get("name")
-            y = file.get("id")
-        rtnlist.reverse()
-        return rtnlist
+    # def __get_recursive_list(self, file, rootid = "root"):
+    #     rtnlist = []
+    #     if not rootid:
+    #         rootid = file.get('teamDriveId')
+    #     if rootid == "root":
+    #         rootid = self.__service.files().get(fileId = 'root', fields="id").execute().get('id')
+    #     x = file.get("name")
+    #     y = file.get("id")
+    #     while(y != rootid):
+    #         rtnlist.append(x)
+    #         file = self.__service.files().get(
+    #                                         fileId=file.get("parents")[0],
+    #                                         supportsAllDrives=True,
+    #                                         fields='id, name, parents'
+    #                                         ).execute()
+    #         x = file.get("name")
+    #         y = file.get("id")
+    #     rtnlist.reverse()
+    #     return rtnlist
 
-    def __drive_query(self, parent_id, fileName, stopDup, isRecursive, itemType):
-        try:
-            if isRecursive:
-                if stopDup:
-                    query = f"name = '{fileName}' and "
-                else:
-                    fileName = fileName.split()
-                    query = "".join(
-                        f"name contains '{name}' and "
-                        for name in fileName
-                        if name != ''
-                    )
-                    if itemType == "files":
-                        query += "mimeType != 'application/vnd.google-apps.folder' and "
-                    elif itemType == "folders":
-                        query += "mimeType = 'application/vnd.google-apps.folder' and "
-                query += "trashed = false"
-                if parent_id == "root":
-                    return (
-                        self.__service.files()
-                        .list(q=query + " and 'me' in owners",
-                            pageSize=200,
-                            spaces='drive',
-                            fields='files(id, name, mimeType, size, parents)',
-                            orderBy='folder, name asc'
-                        )
-                        .execute()
-                    )
-                else:
-                    return (
-                        self.__service.files()
-                        .list(supportsTeamDrives=True,
-                            includeTeamDriveItems=True,
-                            teamDriveId=parent_id,
-                            q=query,
-                            corpora='drive',
-                            spaces='drive',
-                            pageSize=200,
-                            fields='files(id, name, mimeType, size, teamDriveId, parents)',
-                            orderBy='folder, name asc'
-                        )
-                        .execute()
-                    )
-            else:
-                if stopDup:
-                    query = f"'{parent_id}' in parents and name = '{fileName}' and "
-                else:
-                    query = f"'{parent_id}' in parents and "
-                    fileName = fileName.split()
-                    for name in fileName:
-                        if name != '':
-                            query += f"name contains '{name}' and "
-                    if itemType == "files":
-                        query += "mimeType != 'application/vnd.google-apps.folder' and "
-                    elif itemType == "folders":
-                        query += "mimeType = 'application/vnd.google-apps.folder' and "
-                query += "trashed = false"
-                return (
-                    self.__service.files()
-                    .list(
-                        supportsTeamDrives=True,
-                        includeTeamDriveItems=True,
-                        q=query,
-                        spaces='drive',
-                        pageSize=200,
-                        fields='files(id, name, mimeType, size)',
-                        orderBy='folder, name asc',
-                    )
-                    .execute()
-                )
-        except Exception as err:
-            err = str(err).replace('>', '').replace('<', '')
-            LOGGER.error(err)
-            return {'files': []}
-
-    def drive_list(self, fileName, stopDup=False, noMulti=False, isRecursive=True, itemType=""):
-        msg = ""
-        fileName = self.__escapes(str(fileName))
-        contents_count = 0
-        telegraph_content = []
-        path = []
-        Title = False
-        if len(DRIVES_IDS) > 1:
-            token_service = self.__alt_authorize()
-            if token_service is not None:
-                self.__service = token_service
-        for index, parent_id in enumerate(DRIVES_IDS):
-            if isRecursive and len(parent_id) > 23:
-                isRecur = False
-            else:
-                isRecur = isRecursive
-            response = self.__drive_query(parent_id, fileName, stopDup, isRecur, itemType)
-            if not response["files"] and noMulti:
-                break
-            elif not response["files"]:
-                continue
-            if not Title:
-                msg += f'<h4>Search Result For {fileName}</h4>'
-                Title = True
-            if len(DRIVES_NAMES) > 1 and DRIVES_NAMES[index] is not None:
-                msg += f"╾────────────╼<br><b>{DRIVES_NAMES[index]}</b><br>╾────────────╼<br>"
-            for file in response.get('files', []):
-                mime_type = file.get('mimeType')
-                if mime_type == "application/vnd.google-apps.folder":
-                    furl = f"https://drive.google.com/drive/folders/{file.get('id')}"
-                    msg += f"📁 <code>{file.get('name')}<br>(folder)</code><br>"
-                    msg += f"<b><a href={furl}>Drive Link</a></b>"
-                    if INDEX_URLS[index] is not None:
-                        if isRecur:
-                            url_path = "/".join([rquote(n, safe='') for n in self.__get_recursive_list(file, parent_id)])
-                        else:
-                            url_path = rquote(f'{file.get("name")}', safe='')
-                        url = f'{INDEX_URLS[index]}/{url_path}/'
-                        msg += f' <b>| <a href="{url}">Index Link</a></b>'
-                elif mime_type == 'application/vnd.google-apps.shortcut':
-                    msg += f"⁍<a href='https://drive.google.com/drive/folders/{file.get('id')}'>{file.get('name')}" \
-                        f"</a> (shortcut)"
-                    # Excluded index link as indexes cant download or open these shortcuts
-                else:
-                    furl = f"https://drive.google.com/uc?id={file.get('id')}&export=download"
-                    msg += f"📄 <code>{file.get('name')}<br>({get_readable_file_size(int(file.get('size', 0)))})</code><br>"
-                    msg += f"<b><a href={furl}>Drive Link</a></b>"
-                    if INDEX_URLS[index] is not None:
-                        if isRecur:
-                            url_path = "/".join(
-                                rquote(n, safe='')
-                                for n in self.__get_recursive_list(file, parent_id)
-                            )
-
-                        else:
-                            url_path = rquote(f'{file.get("name")}')
-                        url = f'{INDEX_URLS[index]}/{url_path}'
-                        msg += f' <b>| <a href="{url}">Index Link</a></b>'
-                        if VIEW_LINK:
-                            urlv = f'{INDEX_URLS[index]}/{url_path}?a=view'
-                            msg += f' <b>| <a href="{urlv}">View Link</a></b>'
-                msg += '<br><br>'
-                contents_count += 1
-                if len(msg.encode('utf-8')) > 39000:
-                    telegraph_content.append(msg)
-                    msg = ""
-            if noMulti:
-                break
-
-        if msg != '':
-            telegraph_content.append(msg)
-
-        if len(telegraph_content) == 0:
-            return "", None
-
-        for content in telegraph_content:
-            path.append(
-                telegraph.create_page(
-                    title='Mirror-Leech-Bot Drive Search',
-                    content=content
-                )["path"]
-            )
-        if len(path) > 1:
-            telegraph.edit_telegraph(path, telegraph_content)
-
-        msg = f"<b>Found {contents_count} result for <i>{fileName}</i></b>"
-        buttons = ButtonMaker()
-        buttons.buildbutton("🔎 VIEW", f"https://telegra.ph/{path[0]}")
-
-        return msg, InlineKeyboardMarkup(buttons.build_menu(1))
+    # def __drive_query(self, parent_id, fileName, stopDup, isRecursive, itemType):
+    #     try:
+    #         if isRecursive:
+    #             if stopDup:
+    #                 query = f"name = '{fileName}' and "
+    #             else:
+    #                 fileName = fileName.split()
+    #                 query = "".join(
+    #                     f"name contains '{name}' and "
+    #                     for name in fileName
+    #                     if name != ''
+    #                 )
+    #                 if itemType == "files":
+    #                     query += "mimeType != 'application/vnd.google-apps.folder' and "
+    #                 elif itemType == "folders":
+    #                     query += "mimeType = 'application/vnd.google-apps.folder' and "
+    #             query += "trashed = false"
+    #             if parent_id == "root":
+    #                 return (
+    #                     self.__service.files()
+    #                     .list(q=query + " and 'me' in owners",
+    #                         pageSize=200,
+    #                         spaces='drive',
+    #                         fields='files(id, name, mimeType, size, parents)',
+    #                         orderBy='folder, name asc'
+    #                     )
+    #                     .execute()
+    #                 )
+    #             else:
+    #                 return (
+    #                     self.__service.files()
+    #                     .list(supportsTeamDrives=True,
+    #                         includeTeamDriveItems=True,
+    #                         teamDriveId=parent_id,
+    #                         q=query,
+    #                         corpora='drive',
+    #                         spaces='drive',
+    #                         pageSize=200,
+    #                         fields='files(id, name, mimeType, size, teamDriveId, parents)',
+    #                         orderBy='folder, name asc'
+    #                     )
+    #                     .execute()
+    #                 )
+    #         else:
+    #             if stopDup:
+    #                 query = f"'{parent_id}' in parents and name = '{fileName}' and "
+    #             else:
+    #                 query = f"'{parent_id}' in parents and "
+    #                 fileName = fileName.split()
+    #                 for name in fileName:
+    #                     if name != '':
+    #                         query += f"name contains '{name}' and "
+    #                 if itemType == "files":
+    #                     query += "mimeType != 'application/vnd.google-apps.folder' and "
+    #                 elif itemType == "folders":
+    #                     query += "mimeType = 'application/vnd.google-apps.folder' and "
+    #             query += "trashed = false"
+    #             return (
+    #                 self.__service.files()
+    #                 .list(
+    #                     supportsTeamDrives=True,
+    #                     includeTeamDriveItems=True,
+    #                     q=query,
+    #                     spaces='drive',
+    #                     pageSize=200,
+    #                     fields='files(id, name, mimeType, size)',
+    #                     orderBy='folder, name asc',
+    #                 )
+    #                 .execute()
+    #             )
+    #     except Exception as err:
+    #         err = str(err).replace('>', '').replace('<', '')
+    #         LOGGER.error(err)
+    #         return {'files': []}
 
     def count(self, link):
         try:
@@ -860,8 +769,8 @@ class GoogleDriveHelper:
                         'dailyLimitExceeded',
                     ]:
                         raise err
-                    if USE_SERVICE_ACCOUNTS:
-                        if self.__sa_count == len(listdir("accounts")) or self.__sa_count > 50:
+                    if USER_GdDrive.get('isservice_account'):
+                        if self.__sa_count == len(listdir(USER_GdDrive.get('account_path'))) or self.__sa_count > 50:
                             self.is_cancelled = True
                             raise err
                         else:
