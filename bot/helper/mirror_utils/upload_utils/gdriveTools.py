@@ -63,6 +63,9 @@ class GoogleDriveHelper:
         self.alt_auth = False
         if USER_GdDrive.get('isservice_account'):
             self.SERVICE_ACCOUNT_INDEX = randrange(len(listdir(USER_GdDrive.get('account_path'))))
+        else:
+            LOGGER.info(USER_GdDrive)
+        
 
     @property
     def speed(self):
