@@ -81,7 +81,7 @@ def gddelete_yes_callback(update, context):
     else:
         try:
             query.answer()
-            del USER_GdDrive.clear()
+            USER_GdDrive.clear()
             DbManger().gddrive_delete()
             msg_text = "Deleting google deive config..."
         except Exception as e:
