@@ -184,7 +184,7 @@ def gdadd_receive_sa_callback(update, context):
         USER_GdDrive.update(mesg_dict)
         isteam_drive =1 if USER_GdDrive['isteam_drive'] else 0
         isservice_account = 1 if USER_GdDrive['isservice_account'] else 0
-        DbManger.gddrive_add(parent_id=USER_GdDrive['parent_id'], isteam_drive=isteam_drive, isservice_account=isservice_account, account_path=USER_GdDrive['account_path'], token_path=USER_GdDrive['token_path'])
+        DbManger().gddrive_add(parent_id=USER_GdDrive['parent_id'], isteam_drive=isteam_drive, isservice_account=isservice_account, account_path=USER_GdDrive['account_path'], token_path=USER_GdDrive['token_path'])
         mesg_dict.clear()
         msg_text = "Google service account zip file received!"
     except Exception as e:
@@ -205,9 +205,9 @@ def gdadd_receive_token_callback(update, context):
         mesg_dict['token_path'] = token_path
         mesg_dict['account_path'] = ''
         USER_GdDrive.update(mesg_dict)
-        isteam_drive =1 if USER_GdDrive['isteam_drive'] else 0
+        isteam_drive = 1 if USER_GdDrive['isteam_drive'] else 0
         isservice_account = 1 if USER_GdDrive['isservice_account'] else 0
-        DbManger.gddrive_add(parent_id=USER_GdDrive['parent_id'], isteam_drive=isteam_drive, isservice_account=isservice_account, account_path=USER_GdDrive['account_path'], token_path=USER_GdDrive['token_path'])
+        DbManger().gddrive_add(parent_id=USER_GdDrive['parent_id'], isteam_drive=isteam_drive, isservice_account=isservice_account, account_path=USER_GdDrive['account_path'], token_path=USER_GdDrive['token_path'])
         mesg_dict.clear()
         msg_text = "Google token.pickle file received!"   
     except Exception as e:
