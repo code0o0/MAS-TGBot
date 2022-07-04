@@ -176,10 +176,9 @@ def gdadd_receive_sa_callback(update, context):
         sa_zip_path = ospath.join(CONFIG_DIR, 'accounts.zip')
         tg_file.download(sa_zip_path)
         sa_dir = ospath.join(CONFIG_DIR, 'accounts')
-        srun(["rm", "-rf", sa_dir])
-        srun(["unzip", "-q", "-o", sa_zip_path, "-d", sa_dir])
+        srun(["unzip", "-q", "-o", sa_zip_path])
         srun(["chmod", "-R", "777", sa_dir])
-        osremove(f"sa_zip_path")
+        osremove(f"{sa_zip_path}")
         mesg_dict['account_path'] = sa_dir
         mesg_dict['token_path'] = ''
         USER_GdDrive.update(mesg_dict)
@@ -191,9 +190,9 @@ def gdadd_receive_sa_callback(update, context):
     except Exception as e:
         LOGGER.error(e)
         msg_text = f"{e} Error receiving google service account zip file, please try again!"
-        editMessage(msg_text, msg)
+        sendMessage(msg_text, context.bot, msg)
         return FOURTH
-    editMessage(msg_text, msg)
+    sendMessage(msg_text, context.bot, msg)
     Thread(target=auto_delete_message, args=(context.bot, msg, msg.reply_to_message)).start()
     return ConversationHandler.END
     
@@ -214,9 +213,9 @@ def gdadd_receive_token_callback(update, context):
     except Exception as e:
         LOGGER.error(e)
         msg_text = f"{e} Error receiving google token.pickle file, please try again!"
-        editMessage(msg_text, msg)
+        sendMessage(msg_text, context.bot, msg)
         return FOURTH
-    editMessage(msg_text, msg)
+    sendMessage(msg_text, context.bot, msg)
     Thread(target=auto_delete_message, args=(context.bot, msg, msg.reply_to_message)).start()
     return ConversationHandler.END
     
