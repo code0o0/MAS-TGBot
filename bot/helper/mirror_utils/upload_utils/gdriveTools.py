@@ -468,7 +468,7 @@ class GoogleDriveHelper:
         else:
             LOGGER.info(f"Authorizing with {SERVICE_ACCOUNT_INDEX}.json service account")
             credentials = service_account.Credentials.from_service_account_file(
-                ospath.join(USER_GdDrive.get('account_path'), SERVICE_ACCOUNT_INDEX + '.json'),
+                ospath.join(USER_GdDrive.get('account_path'), str(SERVICE_ACCOUNT_INDEX) + '.json'),
                 scopes=self.__OAUTH_SCOPE)
         return build('drive', 'v3', credentials=credentials, cache_discovery=False)
 
