@@ -210,15 +210,15 @@ def gdadd_receive_token_callback(update, context):
         isservice_account = 1 if USER_GdDrive['isservice_account'] else 0
         DbManger.gddrive_add(parent_id=USER_GdDrive['parent_id'], isteam_drive=isteam_drive, isservice_account=isservice_account, account_path=USER_GdDrive['account_path'], token_path=USER_GdDrive['token_path'])
         mesg_dict.clear()
-        msg_text = "Google token.pickle file received!"
-        editMessage(msg_text, msg)
-        Thread(target=auto_delete_message, args=(context.bot, msg, msg.reply_to_message)).start()
-        return ConversationHandler.END
+        msg_text = "Google token.pickle file received!"   
     except Exception as e:
         LOGGER.error(e)
         msg_text = f"{e} Error receiving google token.pickle file, please try again!"
         editMessage(msg_text, msg)
         return FOURTH
+    editMessage(msg_text, msg)
+    Thread(target=auto_delete_message, args=(context.bot, msg, msg.reply_to_message)).start()
+    return ConversationHandler.END
     
 
 conv_handler = ConversationHandler(
