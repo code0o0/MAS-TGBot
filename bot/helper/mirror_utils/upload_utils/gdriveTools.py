@@ -16,7 +16,7 @@ from telegram import InlineKeyboardMarkup
 from tenacity import retry, wait_exponential, stop_after_attempt, retry_if_exception_type, RetryError
 
 from bot.helper.telegram_helper.button_build import ButtonMaker
-from bot import DOWNLOAD_DIR, INDEX_URL, VIEW_LINK, EXTENSION_FILTER, USER_GdDrive, CONFIG_DIR
+from bot import DOWNLOAD_DIR, INDEX_URL, VIEW_LINK, EXTENSION_FILTER, USER_GdDrive
 from bot.helper.ext_utils.bot_utils import get_readable_file_size, setInterval
 from bot.helper.ext_utils.fs_utils import get_mime_type, get_path_size
 
@@ -63,7 +63,6 @@ class GoogleDriveHelper:
         self.alt_auth = False
         if USER_GdDrive.get('isservice_account'):
             self.SERVICE_ACCOUNT_INDEX = randrange(len(listdir(USER_GdDrive.get('account_path'))))
-        LOGGER.info(USER_GdDrive)
         
 
     @property

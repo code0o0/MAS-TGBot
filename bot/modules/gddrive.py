@@ -29,6 +29,7 @@ def gdrive_buttons(update, context):
         account = oslistdir(USER_GdDrive.get('account_path'))
         msg_text += f"Current G-drive config state:\n<b>FolderID: </b><code>{USER_GdDrive.get('parent_id')}</code>\n"
         msg_text += f"<b>TeamDrive: </b><code>{USER_GdDrive.get('isteam_drive')}</code>\n"
+        msg_text += f"<b>SA: </b><code>{USER_GdDrive.get('isservice_account')}</code>\n"
         if USER_GdDrive.get('account_path'):
             msg_text += f"<b>Account: </b><code>{len(account)}</code>\n"
     sendMarkup(msg_text, context.bot, update.message, button)
