@@ -175,8 +175,10 @@ def gdadd_receive_sa_callback(update, context):
         tg_file = msg.document.get_file()
         sa_zip_path = ospath.join(CONFIG_DIR, 'accounts.zip')
         tg_file.download(sa_zip_path)
+        sa_dir = ospath.join(CONFIG_DIR, 'accounts')
+        srun(["rm", "-rf", f"{sa_dir}"])
         srun(["unzip", "-q", "-o", f"{sa_zip_path}"])
-        srun(["chmod", "-R", "777", f"{sa_zip_path}".strip('.zip')])
+        srun(["chmod", "-R", "777", f"{sa_dir}"])
         osremove(f"sa_zip_path")
         mesg_dict['account_path'] = f"{sa_zip_path}".strip('.zip')
         mesg_dict['token_path'] = ''
