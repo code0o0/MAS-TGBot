@@ -177,7 +177,7 @@ def gdadd_receive_sa_callback(update, context):
         tg_file.download(sa_zip_path)
         sa_dir = ospath.join(CONFIG_DIR, 'accounts')
         srun(["rm", "-rf", f"{sa_dir}"])
-        srun(["unzip", "-q", "-o", f"{sa_zip_path}"])
+        srun(["unzip", "-q", "-o", f"{sa_zip_path}", "-d", f"{sa_dir}"])
         srun(["chmod", "-R", "777", f"{sa_dir}"])
         osremove(f"sa_zip_path")
         mesg_dict['account_path'] = f"{sa_zip_path}".strip('.zip')
@@ -188,14 +188,14 @@ def gdadd_receive_sa_callback(update, context):
         DbManger.gddrive_add(parent_id=USER_GdDrive['parent_id'], isteam_drive=isteam_drive, isservice_account=isservice_account, account_path=USER_GdDrive['account_path'], token_path=USER_GdDrive['token_path'])
         mesg_dict.clear()
         msg_text = "Google service account zip file received!"
-        editMessage(msg_text, msg)
-        Thread(target=auto_delete_message, args=(context.bot, msg, msg.reply_to_message)).start()
-        return ConversationHandler.END
     except Exception as e:
         LOGGER.error(e)
         msg_text = f"{e} Error receiving google service account zip file, please try again!"
         editMessage(msg_text, msg)
         return FOURTH
+    editMessage(msg_text, msg)
+    Thread(target=auto_delete_message, args=(context.bot, msg, msg.reply_to_message)).start()
+    return ConversationHandler.END
     
 def gdadd_receive_token_callback(update, context):
     msg = update.message
