@@ -176,11 +176,11 @@ def gdadd_receive_sa_callback(update, context):
         sa_zip_path = ospath.join(CONFIG_DIR, 'accounts.zip')
         tg_file.download(sa_zip_path)
         sa_dir = ospath.join(CONFIG_DIR, 'accounts')
-        srun(["rm", "-rf", f"{sa_dir}"])
-        srun(["unzip", "-q", "-o", f"{sa_zip_path}", "-d", f"{sa_dir}"])
-        srun(["chmod", "-R", "777", f"{sa_dir}"])
+        srun(["rm", "-rf", sa_dir])
+        srun(["unzip", "-q", "-o", sa_zip_path, "-d", sa_dir])
+        srun(["chmod", "-R", "777", sa_dir])
         osremove(f"sa_zip_path")
-        mesg_dict['account_path'] = f"{sa_zip_path}".strip('.zip')
+        mesg_dict['account_path'] = sa_dir
         mesg_dict['token_path'] = ''
         USER_GdDrive.update(mesg_dict)
         isteam_drive =1 if USER_GdDrive['isteam_drive'] else 0
