@@ -27,7 +27,7 @@ basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
 LOGGER = getLogger(__name__)
 
 
-load_dotenv('/home/config/config.env', override=True)
+load_dotenv('/usr/src/app/config/config.env', override=True)
 
 def getConfig(name, default_str = ''):
     var = environ.get(name, '')
@@ -76,9 +76,9 @@ else:
 
 
 # STORAGE CONF
-HHD_DIR = '/home/download'
-CONFIG_DIR = '/home/config'
-DB_URI = '/home/config/data.db'
+HHD_DIR = '/usr/src/app/storage'
+CONFIG_DIR = '/usr/src/app/config'
+DB_URI = '/usr/src/app/config/data.db'
 
 
 # UPLOAD G-DRIVE

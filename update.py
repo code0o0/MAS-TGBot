@@ -14,10 +14,7 @@ basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
                     level=INFO)
 
 
-if ospath.exists('./config/config.env') and not ospath.exists('/home/config/config.env'):
-    shutil.move('./config/config.env','/home/config/config.env')
-
-load_dotenv('/home/config/config.env', override=True)
+load_dotenv('/usr/src/app/config/config.env', override=True)
 
 UPSTREAM_REPO = environ.get('UPSTREAM_REPO')
 UPSTREAM_BRANCH = environ.get('UPSTREAM_BRANCH')

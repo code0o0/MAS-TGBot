@@ -244,8 +244,8 @@ sudo docker build . -t mas-tgbot
 ```
 sudo docker run -d \
   --name=msbot \
-  -v /docker/msbot/download:/home/download \
-  -v /docker/msbot/config:/home/config \
+  -v /docker/msbot/download:/usr/src/app/storage \
+  -v /docker/msbot/config:/usr/src/app/config \
   -p 11000:11000 \
   --restart on-failure \
   mas-tgbot:latest

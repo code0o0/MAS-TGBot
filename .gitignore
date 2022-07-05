@@ -1,4 +1,3 @@
-config.env
 *auth_token.txt
 *.pyc
 data*
@@ -8,4 +7,6 @@ data*
 *.pickle
 .netrc
 Thumbnails/*
+config/*
+storage/*
 cookies.txt
