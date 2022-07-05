@@ -20,7 +20,7 @@ def delete_file(update, context):
     if mesg_args:
         link = mesg_args
     elif reply_to:
-        link = reply_to.text.strip()
+        link = reply_to.text.split(maxsplit=1)[0].strip()
     else:
         link = ''
     if is_gdrive_link(link):

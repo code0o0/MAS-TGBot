@@ -237,6 +237,6 @@ conv_handler = ConversationHandler(
         },
     fallbacks=[CallbackQueryHandler(gdcancel_callback, pattern=r"GDcancel_*")],
     run_async=True,
-    conversation_timeout = 120
+    conversation_timeout = 60
 )
 dispatcher.add_handler(conv_handler)

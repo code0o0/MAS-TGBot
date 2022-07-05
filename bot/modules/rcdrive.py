@@ -231,5 +231,5 @@ conv_handler = ConversationHandler(
                 CallbackQueryHandler(rcdelete_yes_callback, pattern=r'RCdelyes_.*')],
     },
     fallbacks=[CallbackQueryHandler(rccancel_callback, pattern=r'RCcancel_.*')],
-    run_async=True)
+    run_async=True, conversation_timeout = 60)
 dispatcher.add_handler(conv_handler)

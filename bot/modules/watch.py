@@ -23,10 +23,10 @@ def _watch(bot, message, isZip=False, uptype='', multi=0):
     link = mssg.split()
     if len(link) > 1:
         link = link[1].strip()
-        if link.isdigit():
+        if link.strip().isdigit():
             multi = int(link)
             link = ''
-        elif link.startswith(("n-name:", "pswd:", "args::")):
+        elif link.strip().startswith(("n-name:", "pswd:", "args::")):
             link = ''
     else:
         link = ''
@@ -60,7 +60,7 @@ def _watch(bot, message, isZip=False, uptype='', multi=0):
     reply_to = message.reply_to_message
     if reply_to is not None:
         if len(link) == 0:
-            link = reply_to.text.strip()
+            link = reply_to.text.split(maxsplit=1)[0].strip()
         if reply_to.from_user.username:
             tag = f"@{reply_to.from_user.username}"
         else:
