@@ -6,6 +6,7 @@ data*
 *.json
 *.pickle
 .netrc
+config.env
 Thumbnails/*
 config/*
 storage/*

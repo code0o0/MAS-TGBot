@@ -16,7 +16,7 @@ ENV LANG="en_US.UTF-8" LANGUAGE="en_US:en" MEGA_SDK_VERSION="3.12.0" LD_LIBRARY_
 
 COPY . .
 RUN pip3 install --no-cache-dir -r requirements.txt && \
-    mkdir /usr/src/app/storage && \
+    mkdir /usr/src/app/storage && mkdir /usr/src/app/config &&\
     pip3 install /usr/src/app/mega-sdk/megasdk-3.12.2-py2.py3-none-any.whl && \
     cd /usr/local/lib/python3.8/dist-packages/mega && ln -s libmega.so libmega.so.31202.0.0 && \
     ln -s libmega.so libmega.so.31202

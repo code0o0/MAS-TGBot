@@ -13,6 +13,8 @@ basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
                     handlers=[FileHandler('log.txt'), StreamHandler()],
                     level=INFO)
 
+if ospath.exists('./config.env') and not ospath.exists('./config/config.env'):
+    shutil.move('./config.env','./config/config.env')
 
 load_dotenv('/usr/src/app/config/config.env', override=True)
 
