@@ -192,6 +192,7 @@ botcmds = [
         (f'{BotCommands.WatchCommand}','Mirror yt-dlp-link n-name:xx pswd:xx [zip] args::x:y|x1:y1'),
         (f'{BotCommands.ZipWatchCommand}','Mirror yt-dlp supported link as zip'),
         (f'{BotCommands.CloneCommand}','Copy file/folder to Drive'),
+        (f'{BotCommands.SearchCommand}','Search for torrents with API'),
         (f'{BotCommands.RcdriveCommand}', 'Set rclone default config'),
         (f'{BotCommands.GddriveCommand}', 'Set google drive default config'),
         (f'{BotCommands.DeleteCommand}','Delete file/folder from Drive'),
