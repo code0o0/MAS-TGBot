@@ -4,15 +4,15 @@ from faulthandler import enable as faulthandler_enable
 from telegram.ext import Updater as tgUpdater
 from qbittorrentapi import Client as qbClient
 from aria2p import API as ariaAPI, Client as ariaClient
-from os import remove as osremove, path as ospath, listdir as oslistdir, environ
+from os import path as ospath, listdir as oslistdir, environ
 from requests import get as rget
-from json import loads as jsnloads
 from subprocess import Popen, run as srun
 from time import sleep, time
 from threading import Thread, Lock
 from dotenv import load_dotenv
 from pyrogram import Client, enums
 from asyncio import get_event_loop
+import shutil
 
 main_loop = get_event_loop()
 
@@ -246,6 +246,7 @@ try:
     SEARCH_PLUGINS = [ospath.join(seplugin_path, x) for x in oslistdir(seplugin_path) if ospath.isfile(ospath.join(seplugin_path, x))]
     if len(SEARCH_PLUGINS) == 0:
         raise KeyError
+    shutil.rmtree(seplugin_path, ignore_errors=True)
 except:
     SEARCH_PLUGINS = None
 
