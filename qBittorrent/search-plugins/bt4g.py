@@ -68,7 +68,7 @@ class bt4g(object):
 
     def search_page(self, term, pagenumber, cat):
         try:
-            query = f"{self.url}{self.supported_categories[cat]}search/{term}/byseeders/{pagenumber}"
+            query = f"{self.url}{self.supported_categories[cat]}search/{term}/{pagenumber}"
             parser = self.MyHTMLParser()
             return parser.feed(retrieve_url(query))
         except Exception as e:
