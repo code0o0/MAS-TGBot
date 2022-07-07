@@ -4,7 +4,7 @@ from faulthandler import enable as faulthandler_enable
 from telegram.ext import Updater as tgUpdater
 from qbittorrentapi import Client as qbClient
 from aria2p import API as ariaAPI, Client as ariaClient
-from os import remove as osremove, path as ospath, environ
+from os import remove as osremove, path as ospath, listdir as oslistdir, environ
 from requests import get as rget
 from json import loads as jsnloads
 from subprocess import Popen, run as srun
@@ -241,12 +241,11 @@ try:
         raise KeyError
 except:
     SEARCH_API_LINK = None
-
 try:
-    SEARCH_PLUGINS = getConfig('SEARCH_PLUGINS')
+    seplugin_path = ospath.join('/usr/src/app', 'qBittorrent/search-plugins')
+    SEARCH_PLUGINS = [ospath.join(seplugin_path, x) for x in oslistdir(seplugin_path) if ospath.isfile(ospath.join(seplugin_path, x))]
     if len(SEARCH_PLUGINS) == 0:
         raise KeyError
-    SEARCH_PLUGINS = jsnloads(SEARCH_PLUGINS)
 except:
     SEARCH_PLUGINS = None
 
