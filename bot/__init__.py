@@ -12,7 +12,6 @@ from threading import Thread, Lock
 from dotenv import load_dotenv
 from pyrogram import Client, enums
 from asyncio import get_event_loop
-import shutil
 
 main_loop = get_event_loop()
 
@@ -246,7 +245,6 @@ try:
     SEARCH_PLUGINS = [ospath.join(seplugin_path, x) for x in oslistdir(seplugin_path) if ospath.isfile(ospath.join(seplugin_path, x))]
     if len(SEARCH_PLUGINS) == 0:
         raise KeyError
-    shutil.rmtree(seplugin_path, ignore_errors=True)
 except:
     SEARCH_PLUGINS = None
 
