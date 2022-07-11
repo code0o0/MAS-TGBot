@@ -31,7 +31,7 @@ from novaprinter import prettyPrinter
 # parser
 from re import compile as re_compile
 
-class dmhyorg(object):
+class dmhy(object):
     url = "https://share.dmhy.org"
     name = "DMHY"
     supported_categories = {"all":0,"anime":2,"pictures":3,"music":4,"tv":6,"games":9}
@@ -39,27 +39,24 @@ class dmhyorg(object):
     def download_torrent(self, info):
         """ Downloader """
         print(download_file(info))
+    
+    def get_data(self, url):
+        highlight = re_compile('<span class="keyword">([^<]+)</span>')
+        get_next = re_compile('(?s)"fl".+href="([^"]+)">下一')
+        get_item = re_compile('(?m)<a href="(/topics/view/[^"]+)"[^>]+>\s*([^<]*)</a>(?:\s*.*){2}(magnet:[^"]+)".*\s*.*>([\d\.]+)(\w+)</td[^/]+btl_1">([\d-]+)</span></td>\s*[^/]+bts_1">([\d-]+)<')
+        html = retrieve_url(url)
+        next_page = True if get_next.search(html) else False
+        # clear highlighting
+        return [get_item.findall(highlight.sub(r"\1",html)), next_page]
 
     # DO NOT CHANGE the name and parameters of this function
     # This function will be the one called by nova2.py
     def search(self, what, cat="all"):
         """ Performs search """
-
-        def get_data(url):
-            highlight = re_compile('<span class="keyword">([^<]+)</span>')
-            get_next = re_compile('(?s)"fl".+href="([^"]+)">下一')
-            get_item = re_compile('(?m)<a href="(/topics/view/[^"]+)"[^>]+>\s*([^<]*)</a>(?:\s*.*){2}(magnet:[^"]+)".*\s*.*>([\d\.]+)(\w+)</td[^/]+btl_1">([\d-]+)</span></td>\s*[^/]+bts_1">([\d-]+)<')
-            html = retrieve_url(url)
-            next_page = get_next.search(html)
-            # clear highlighting
-            return [get_item.findall(highlight.sub(r"\1",html)),
-                    next_page and self.url + next_page.group(1)]
-
-        query = "%s/topics/list/?keyword=%s&sort_id=%d" % (
-            self.url, what, self.supported_categories.get(cat, "0"))
-
-        while query:
-            [data,query] = get_data(query)
+        pagenumber = 1
+        while pagenumber <= 5:
+            query = f"{self.url}/topics/list/page/{pagenumber}?keyword={what}&sort_id={self.supported_categories.get(cat,0)}"
+            [data,next_page] = self.get_data(query)
             for item in data:
                 prettyPrinter({
                     "desc_link":self.url+item[0],
@@ -70,7 +67,11 @@ class dmhyorg(object):
                     "leech":0 if "-" == item[6] else int(item[6]),
                     "engine_url":self.url
                 })
+            if next_page:
+                pagenumber = pagenumber + 1
+            else:
+                break
 
 if __name__ == "__main__":
-    engine = dmhyorg()
+    engine = dmhy()
     engine.search('conan')
