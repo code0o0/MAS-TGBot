@@ -25,11 +25,11 @@
 # SOFTWARE.
 
 # qBT
+from re import findall as re_findall
+from bs4 import BeautifulSoup
 from helpers import download_file, retrieve_url
 from novaprinter import prettyPrinter
 
-# parser
-from re import compile as re_compile
 
 class dmhy(object):
     url = "https://share.dmhy.org"
@@ -41,13 +41,17 @@ class dmhy(object):
         print(download_file(info))
     
     def get_data(self, url):
-        highlight = re_compile('<span class="keyword">([^<]+)</span>')
-        get_next = re_compile('(?s)"fl".+href="([^"]+)">下一')
-        get_item = re_compile('(?m)<a href="(/topics/view/[^"]+)"[^>]+>\s*([^<]*)</a>(?:\s*.*){2}(magnet:[^"]+)".*\s*.*>([\d\.]+)(\w+)</td[^/]+btl_1">([\d-]+)</span></td>\s*[^/]+bts_1">([\d-]+)<')
         html = retrieve_url(url)
-        next_page = True if get_next.search(html) else False
-        # clear highlighting
-        return [get_item.findall(highlight.sub(r"\1",html)), next_page]
+        soup = BeautifulSoup(html.text, "lxml")
+        nac_tag = soup.select('.nav_title .fl a')
+        next_page = True if [i for i in nac_tag if "下一" in i.text] else False
+        desc_links = [self.url + i.get('href') for i in soup.select('.tablesorter  tbody tr td.title >a')]
+        titles = [i.get_text() for i in soup.select('.tablesorter  tbody tr td.title >a')]
+        links = [i.get('href') for i in soup.select('a.download-arrow.arrow-magnet')]
+        sizes = [i.text for i in soup.select('tr td:nth-of-type(5)')]
+        seeds = [i.get_text() for i in soup.select('td .btl_1')]
+        leech = [i.get_text() for i in soup.select('td .bts_1')]
+        return zip(desc_links, titles, links, sizes, seeds, leech), next_page
 
     # DO NOT CHANGE the name and parameters of this function
     # This function will be the one called by nova2.py
@@ -56,15 +60,16 @@ class dmhy(object):
         pagenumber = 1
         while pagenumber <= 5:
             query = f"{self.url}/topics/list/page/{pagenumber}?keyword={what}&sort_id={self.supported_categories.get(cat,0)}"
-            [data,next_page] = self.get_data(query)
+            data, next_page = self.get_data(query)
             for item in data:
+                size = re_findall(r'(.*?)([a-zA-Z]+)', item[3])[0]
                 prettyPrinter({
-                    "desc_link":self.url+item[0],
+                    "desc_link":item[0],
                     "name":item[1],
                     "link":item[2],
-                    "size":str(int(float(item[3]) * 2 ** (10 * (1 + 'kmgtpezy'.find(item[4][0].lower()))))),
-                    "seeds":0 if "-" == item[5] else int(item[5]),
-                    "leech":0 if "-" == item[6] else int(item[6]),
+                    "size":str(int(float(size[0]) * 2 ** (10 * (1 + 'kmgtpezy'.find(size[1][0].lower()))))),
+                    "seeds":0 if "-" == item[4] else int(item[4]),
+                    "leech":0 if "-" == item[5] else int(item[5]),
                     "engine_url":self.url
                 })
             if next_page:
@@ -74,4 +79,4 @@ class dmhy(object):
 
 if __name__ == "__main__":
     engine = dmhy()
-    engine.search('conan')
+    engine.search('鬼')
