@@ -28,7 +28,7 @@ from re import findall as re_findall
 from bs4 import BeautifulSoup
 from helpers import download_file, retrieve_url
 from novaprinter import prettyPrinter
-from urllib.parse import quote, urljoin
+from urllib.parse import quote
 
 class dmhy(object):
     url = "https://share.dmhy.org"
@@ -43,13 +43,12 @@ class dmhy(object):
         soup = BeautifulSoup(html, "lxml")
         nac_tag = soup.select('.nav_title .fl a')
         next_page = True if [i for i in nac_tag if "下一" in i.text] else False
-        desc_links = [urljoin(self.url, i.get('href')) for i in soup.select('.tablesorter  tbody tr td.title >a')]
-        titles = [i.get_text() for i in soup.select('.tablesorter  tbody tr td.title >a')]
-        links = [i.get('href') for i in soup.select('a.download-arrow.arrow-magnet')]
-        sizes = [i.text for i in soup.select('tr td:nth-of-type(5)')]
+        titles = [''.join(list(i.stripped_strings)) for i in soup.select('.tablesorter  tbody tr td.title >a')]
+        sizes = [i.get_text() for i in soup.select('tr td:nth-of-type(5)')]
         seeds = [i.get_text() for i in soup.select('td .btl_1')]
         leech = [i.get_text() for i in soup.select('td .bts_1')]
-        return zip(desc_links, titles, links, sizes, seeds, leech), next_page
+        links = [i.get('href') for i in soup.select('a.download-arrow.arrow-magnet')]
+        return zip(titles, sizes, seeds, leech, links), next_page
 
     # DO NOT CHANGE the name and parameters of this function
     # This function will be the one called by nova2.py
@@ -60,15 +59,14 @@ class dmhy(object):
             query = f"{self.url}/topics/list/page/{pagenumber}?keyword={quote(what, encoding='utf8')}&sort_id={self.supported_categories.get(cat,0)}"
             data, next_page = self.get_data(query)
             for item in data:
-                size = re_findall(r'(.*?)([a-zA-Z]+)', item[3])[0]
+                size = re_findall(r'(.*?)([a-zA-Z]+)', item[1])[0]
                 prettyPrinter({
-                    "desc_link":item[0],
-                    "name":item[1],
-                    "link":item[2],
+                    "name":item[0].replace('|', ''),
                     "size":str(int(float(size[0]) * 2 ** (10 * (1 + 'kmgtpezy'.find(size[1][0].lower()))))),
-                    "seeds":0 if "-" == item[4] else int(item[4]),
-                    "leech":0 if "-" == item[5] else int(item[5]),
-                    "engine_url":self.url
+                    "seeds":0 if "-" == item[2] else int(item[2]),
+                    "leech":0 if "-" == item[3] else int(item[3]),
+                    "engine_url":self.url,
+                    "link":item[4]   
                 })
             if next_page:
                 pagenumber = pagenumber + 1
