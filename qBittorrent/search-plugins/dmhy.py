@@ -24,11 +24,12 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 # qBT
+
 from re import findall as re_findall
 from bs4 import BeautifulSoup
-from helpers import download_file, retrieve_url
+from helpers import download_file
 from novaprinter import prettyPrinter
-from urllib.parse import quote
+import requests
 
 class dmhy(object):
     url = "https://share.dmhy.org"
@@ -39,7 +40,8 @@ class dmhy(object):
         print(download_file(info))
     
     def get_data(self, url):
-        html = retrieve_url(url)
+        #html = retrieve_url(url)
+        html = requests.get(url).text
         soup = BeautifulSoup(html, "lxml")
         nac_tag = soup.select('.nav_title .fl a')
         next_page = True if [i for i in nac_tag if "下一" in i.text] else False
@@ -48,15 +50,15 @@ class dmhy(object):
         seeds = [i.get_text() for i in soup.select('td .btl_1')]
         leech = [i.get_text() for i in soup.select('td .bts_1')]
         links = [i.get('href') for i in soup.select('a.download-arrow.arrow-magnet')]
+        print(titles)
         return zip(titles, sizes, seeds, leech, links), next_page
 
-    # DO NOT CHANGE the name and parameters of this function
-    # This function will be the one called by nova2.py
     def search(self, what, cat="all"):
         """ Performs search """
         pagenumber = 1
+        what = what.replace("%20", "+")
         while pagenumber <= 2:
-            query = f"{self.url}/topics/list/page/{pagenumber}?keyword={quote(what, encoding='utf8')}&sort_id={self.supported_categories.get(cat,0)}"
+            query = f"{self.url}/topics/list/page/{pagenumber}?keyword={what.encode('ascii', 'ignore').decode('ascii')}&sort_id={self.supported_categories.get(cat,0)}"
             data, next_page = self.get_data(query)
             for item in data:
                 size = re_findall(r'(.*?)([a-zA-Z]+)', item[1])[0]
