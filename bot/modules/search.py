@@ -242,7 +242,7 @@ def _api_buttons(user_id, method):
     for data, name in SITES.items():
         buttons.sbutton(name, f"torser {user_id} {data} {method}")
     buttons.sbutton("Cancel", f"torser {user_id} cancel")
-    return InlineKeyboardMarkup(buttons.build_menu(2))
+    return InlineKeyboardMarkup(buttons.build_menu(3))
 
 def _plugin_buttons(user_id):
     buttons = button_build.ButtonMaker()
@@ -256,7 +256,7 @@ def _plugin_buttons(user_id):
         buttons.sbutton(siteName.capitalize(), f"torser {user_id} {siteName} plugin")
     buttons.sbutton('All', f"torser {user_id} all plugin")
     buttons.sbutton("Cancel", f"torser {user_id} cancel")
-    return InlineKeyboardMarkup(buttons.build_menu(2))
+    return InlineKeyboardMarkup(buttons.build_menu(3))
 
 
 torser_handler = CommandHandler(BotCommands.SearchCommand, torser, filters=CustomFilters.authorized_chat | CustomFilters.authorized_user, run_async=True)
