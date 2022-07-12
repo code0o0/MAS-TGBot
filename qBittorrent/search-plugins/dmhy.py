@@ -57,7 +57,7 @@ class dmhy(object):
         """ Performs search """
         pagenumber = 1
         what = what.replace("%20", "+")
-        while pagenumber <= 2:
+        while pagenumber <= 1:
             query = f"{self.url}/topics/list/page/{pagenumber}?keyword={what.encode('ascii', 'ignore').decode('ascii')}&sort_id={self.supported_categories.get(cat,0)}"
             data, next_page = self.get_data(query)
             for item in data:
