@@ -13,7 +13,6 @@ from re import findall as re_findall, sub as re_sub, match as re_match, search a
 from urllib.parse import urlparse, unquote
 from json import loads as jsnloads
 from lk21 import Bypass
-from cfscrape import create_scraper
 from bs4 import BeautifulSoup
 from base64 import standard_b64encode
 
@@ -231,24 +230,6 @@ def streamtape(url: str) -> str:
     Based on https://github.com/zevtyardt/lk21
     """
     return Bypass().bypass_streamtape(url)
-
-def racaty(url: str) -> str:
-    """ Racaty direct link generator
-    based on https://github.com/SlamDevs/slam-mirrorbot"""
-    dl_url = ''
-    try:
-        re_findall(r'\bhttps?://.*racaty\.net\S+', url)[0]
-    except IndexError:
-        raise DirectDownloadLinkException("No Racaty links found\n")
-    scraper = create_scraper()
-    r = scraper.get(url)
-    soup = BeautifulSoup(r.text, "lxml")
-    op = soup.find("input", {"name": "op"})["value"]
-    ids = soup.find("input", {"name": "id"})["value"]
-    rapost = scraper.post(url, data = {"op": op, "id": ids})
-    rsoup = BeautifulSoup(rapost.text, "lxml")
-    dl_url = rsoup.find("a", {"id": "uniqueExpirylink"})["href"].replace(" ", "%20")
-    return dl_url
 
 def fichier(link: str) -> str:
     """ 1Fichier direct link generator
