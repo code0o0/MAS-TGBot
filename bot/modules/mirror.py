@@ -14,13 +14,12 @@ from telegram import InlineKeyboardMarkup
 from bot import Interval, INDEX_URL, VIEW_LINK, aria2, QB_SEED, dispatcher, DOWNLOAD_DIR, \
     download_dict, download_dict_lock, TG_SPLIT_SIZE, LOGGER, DB_URI, INCOMPLETE_TASK_NOTIFIER, \
     EXTENSION_FILTER, HHD_DIR, USER_RcDrive, USER_GdDrive
-from bot.helper.ext_utils.bot_utils import is_url, is_magnet, is_mega_link, is_gdrive_link, get_content_type, get_readable_file_size
+from bot.helper.ext_utils.bot_utils import is_url, is_magnet, is_gdrive_link, get_content_type, get_readable_file_size
 from bot.helper.ext_utils.fs_utils import get_base_name, get_path_size, split_file, clean_download, get_mime_type
 from bot.helper.ext_utils.exceptions import DirectDownloadLinkException, NotSupportedExtractionArchive
 from bot.helper.mirror_utils.download_utils.aria2_download import add_aria2c_download
 from bot.helper.mirror_utils.download_utils.gd_downloader import add_gd_download
 from bot.helper.mirror_utils.download_utils.qbit_downloader import QbDownloader
-from bot.helper.mirror_utils.download_utils.mega_downloader import add_mega_download
 from bot.helper.mirror_utils.download_utils.direct_link_generator import direct_link_generator
 from bot.helper.mirror_utils.download_utils.telegram_downloader import TelegramDownloadHelper
 from bot.helper.mirror_utils.status_utils.extract_status import ExtractStatus
@@ -463,7 +462,7 @@ def _mirror(bot, message, isZip=False, extract=False, isQbit=False, uptype='hddr
 
     LOGGER.info(link)
 
-    if not is_mega_link(link) and not isQbit and not is_magnet(link) \
+    if not isQbit and not is_magnet(link) \
             and not is_gdrive_link(link) and not link.endswith('.torrent'):
         content_type = get_content_type(link)
         if content_type is None or re_match(r'text/html|text/plain', content_type):
@@ -510,8 +509,6 @@ def _mirror(bot, message, isZip=False, extract=False, isQbit=False, uptype='hddr
             sendMessage(gmsg, bot, message)
         else:
             Thread(target=add_gd_download, args=(link, listener)).start()
-    elif is_mega_link(link):
-        Thread(target=add_mega_download, args=(link, f'{DOWNLOAD_DIR}{listener.uid}/', listener)).start()
     elif isQbit and (is_magnet(link) or ospath.exists(link)):
         Thread(target=QbDownloader(listener).add_qb_torrent, args=(link, f'{DOWNLOAD_DIR}{listener.uid}', qbsel)).start()
     else:

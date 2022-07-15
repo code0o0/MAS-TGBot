@@ -203,12 +203,6 @@ srun(["cp", ".netrc", "/root/.netrc"])
 srun(["chmod", "600", ".netrc"])
 
 
-# MEGA
-MEGA_API_KEY = getConfig('MEGA_API_KEY', None)
-MEGA_EMAIL_ID = getConfig('MEGA_EMAIL_ID', None)
-MEGA_PASSWORD = getConfig('MEGA_PASSWORD', None)
-
-
 # RSS
 RSS_COMMAND = getConfig('RSS_COMMAND', None)
 try:

@@ -232,18 +232,6 @@ def is_url(url: str):
 def is_gdrive_link(url: str):
     return "drive.google.com" in url
 
-def is_mega_link(url: str):
-    return "mega.nz" in url or "mega.co.nz" in url
-
-def get_mega_link_type(url: str):
-    if "folder" in url:
-        return "folder"
-    elif "file" in url:
-        return "file"
-    elif "/#F!" in url:
-        return "folder"
-    return "file"
-
 def is_magnet(url: str):
     magnet = re_findall(MAGNET_REGEX, url)
     return bool(magnet)
