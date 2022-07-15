@@ -149,7 +149,7 @@ except:
     BASE_URL = None
 
 SERVER_PORT = int(getConfig('SERVER_PORT','80'))
-Popen([f"gunicorn web.wserver:app --bind 0.0.0.0:{SERVER_PORT}"], shell=True)
+Popen(f"gunicorn web.wserver:app --bind 0.0.0.0:{SERVER_PORT}", shell=True)
 srun(["qbittorrent-nox", "-d", "--profile=."])
 try:
     WEB_PINCODE = getConfig('WEB_PINCODE')
@@ -167,7 +167,6 @@ def get_client():
 
 # Private Files
 UPTOBOX_TOKEN = getConfig('UPTOBOX_TOKEN', None)
-CRYPT = getConfig('CRYPT', None)
 try:
     YT_COOKIES_URL = getConfig('YT_COOKIES_URL')
     if len(YT_COOKIES_URL) == 0:
@@ -263,7 +262,7 @@ rss_dict = {}
 
 # Aria2
 srun(["chmod", "+x", "aria.sh"])
-srun(["./aria.sh"], shell=True)
+srun("./aria.sh", shell=True)
 sleep(0.5)
 aria2 = ariaAPI(
     ariaClient(

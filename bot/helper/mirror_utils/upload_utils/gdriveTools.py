@@ -73,19 +73,19 @@ class GoogleDriveHelper:
         """
         try:
             return self.__chunk_size / self.update_interval
-        except ZeroDivisionError:
+        except:
             return 0
 
     def dspeed(self):
         try:
             return self.__chunk_size / self.update_interval
-        except ZeroDivisionError:
+        except:
             return 0
 
     def cspeed(self):
         try:
             return self.transferred_size / int(time() - self.start_time)
-        except ZeroDivisionError:
+        except:
             return 0
 
     @staticmethod

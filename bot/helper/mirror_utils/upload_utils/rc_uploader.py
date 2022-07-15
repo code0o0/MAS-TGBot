@@ -114,7 +114,7 @@ class RcUploader:
     def speed(self):
         try:
             return self.__chunk_size / self.update_interval
-        except ZeroDivisionError:
+        except:
             return 0
 
     def _on_upload_progress(self):

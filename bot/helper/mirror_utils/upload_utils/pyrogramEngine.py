@@ -176,7 +176,7 @@ class TgUploader:
         with self.__resource_lock:
             try:
                 return self.__chunk_size / self.__time_interval
-            except ZeroDivisionError:
+            except:
                 return 0
 
     def cancel_download(self):
