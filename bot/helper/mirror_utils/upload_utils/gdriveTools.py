@@ -25,7 +25,6 @@ getLogger('googleapiclient.discovery').setLevel(ERROR)
 
 if USER_GdDrive.get('isservice_account'):
     SERVICE_ACCOUNT_INDEX = randrange(len(listdir(USER_GdDrive.get('account_path'))))
-LOGGER.info(f'USER_GdDrive is {USER_GdDrive}')
 
 class GoogleDriveHelper:
 
