@@ -7,10 +7,12 @@ from bot.helper.mirror_utils.status_utils.gd_download_status import GdDownloadSt
 from bot.helper.telegram_helper.message_utils import sendMessage, sendStatusMessage
 
 
-def add_gd_download(link, listener):
+def add_gd_download(link, listener, newname):
     res, size, name, files = GoogleDriveHelper().helper(link)
     if res != "":
         return sendMessage(res, listener.bot, listener.message)
+    if newname:
+        name = newname
     # if STOP_DUPLICATE and listener.uptype == 'gdrive':
     #     LOGGER.info('Checking File/Folder if already in Drive...')
     #     if listener.isZip:

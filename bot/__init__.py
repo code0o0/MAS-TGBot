@@ -60,8 +60,19 @@ if not DOWNLOAD_DIR.endswith("/"):
 DOWNLOAD_STATUS_UPDATE_INTERVAL = int(getConfig('DOWNLOAD_STATUS_UPDATE_INTERVAL', '5'))
 AUTO_DELETE_MESSAGE_DURATION = int(getConfig('AUTO_DELETE_MESSAGE_DURATION', '20'))
 CMD_INDEX = getConfig('CMD_INDEX')
-LOGGER.info("Generating BOT_SESSION_STRING")
-app = Client(name='pyrogram', api_id=int(TELEGRAM_API), api_hash=TELEGRAM_HASH, bot_token=BOT_TOKEN, parse_mode=enums.ParseMode.HTML, no_updates=True)
+LOGGER.info("Generating SESSION_STRING")
+try:
+    IS_PREMIUM_USER = False
+    USER_SESSION_STRING = getConfig('USER_SESSION_STRING')
+    if len(USER_SESSION_STRING) == 0:
+        raise KeyError
+    LOGGER.info("Generating USER_SESSION_STRING")
+    app = Client(name='pyrogram', api_id=int(TELEGRAM_API), api_hash=TELEGRAM_HASH, session_string=USER_SESSION_STRING, parse_mode=enums.ParseMode.HTML, no_updates=True)
+    with app:
+        IS_PREMIUM_USER = app.get_me().is_premium
+except:
+    LOGGER.info("Generating BOT_SESSION_STRING")
+    app = Client(name='pyrogram', api_id=int(TELEGRAM_API), api_hash=TELEGRAM_HASH, bot_token=BOT_TOKEN, parse_mode=enums.ParseMode.HTML, no_updates=True)
 
 
 # OPTIONAL CONFIG
@@ -87,7 +98,10 @@ USER_GdDrive = {}
 # UPLOAD TELEGRAM
 AS_DOC_USERS = set()
 AS_MEDIA_USERS = set()
-TG_SPLIT_SIZE = min(int(getConfig('TG_SPLIT_SIZE','2097151000')), 2097151000)
+if not IS_PREMIUM_USER:
+    TG_SPLIT_SIZE = min(int(getConfig('TG_SPLIT_SIZE','2097152000')), 2097152000)
+else:
+    TG_SPLIT_SIZE = min(int(getConfig('TG_SPLIT_SIZE','4194304000')), 4194304000)
 AS_DOCUMENT = getConfig('AS_DOCUMENT')
 if AS_DOCUMENT.lower() == 'true':
     AS_DOCUMENT = True
@@ -213,9 +227,10 @@ try:
 except:
     RSS_CHAT_ID = None
 RSS_DELAY = int(getConfig('RSS_DELAY', '900'))
-USER_SESSION_STRING = getConfig('USER_SESSION_STRING', None)
-if not USER_SESSION_STRING:
-    rss_session = Client(name='rss_session', api_id=int(TELEGRAM_API), api_hash=TELEGRAM_HASH, session_string=USER_SESSION_STRING, parse_mode=enums.ParseMode.HTML, no_updates=True)
+RSS_USER_SESSION_STRING = getConfig('RSS_USER_SESSION_STRING', None)
+if not RSS_USER_SESSION_STRING:
+    LOGGER.info("Generating RSS_USER_SESSION_STRING")
+    rss_session = Client(name='rss_session', api_id=int(TELEGRAM_API), api_hash=TELEGRAM_HASH, session_string=RSS_USER_SESSION_STRING, parse_mode=enums.ParseMode.HTML, no_updates=True)
 
 
 # Buttons

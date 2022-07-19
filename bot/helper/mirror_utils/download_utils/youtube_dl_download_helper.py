@@ -61,6 +61,7 @@ class YoutubeDLHelper:
                      'cookiefile': 'cookies.txt',
                      'allow_multiple_video_streams': True,
                      'allow_multiple_audio_streams': True,
+                     'noprogress': True,
                      'trim_file_name': 200}
 
     @property
@@ -126,7 +127,9 @@ class YoutubeDLHelper:
                 return self.__onDownloadError(str(e))
         if 'entries' in result:
             for v in result['entries']:
-                if 'filesize_approx' in v:
+                if not v:
+                    continue
+                elif 'filesize_approx' in v:
                     self.size += v['filesize_approx']
                 elif 'filesize' in v:
                     self.size += v['filesize']
@@ -179,15 +182,14 @@ class YoutubeDLHelper:
         self.extractMetaData(link, name, args)
         if self.__is_cancelled:
             return
-        if not self.is_playlist:
-            if args is None:
-                self.opts['outtmpl'] = f"{path}/{self.name}"
-            else:
-                folder_name = self.name.rsplit('.', 1)[0]
-                self.opts['outtmpl'] = f"{path}/{folder_name}/{self.name}"
-                self.name = folder_name
-        else:
+        if self.is_playlist:
             self.opts['outtmpl'] = f"{path}/{self.name}/%(title)s.%(ext)s"
+        elif args is None:
+            self.opts['outtmpl'] = f"{path}/{self.name}"
+        else:
+            folder_name = self.name.rsplit('.', 1)[0]
+            self.opts['outtmpl'] = f"{path}/{folder_name}/{self.name}"
+            self.name = folder_name
         self.__download(link)
 
     def cancel_download(self):
