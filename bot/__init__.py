@@ -98,9 +98,9 @@ USER_GdDrive = {}
 AS_DOC_USERS = set()
 AS_MEDIA_USERS = set()
 if not IS_PREMIUM_USER:
-    TG_SPLIT_SIZE = min(int(getConfig('TG_SPLIT_SIZE','2097152000')), 2097152000)
+    LEECH_SPLIT_SIZE = min(int(getConfig('LEECH_SPLIT_SIZE','2097152000')), 2097152000)
 else:
-    TG_SPLIT_SIZE = min(int(getConfig('TG_SPLIT_SIZE','4194304000')), 4194304000)
+    LEECH_SPLIT_SIZE = min(int(getConfig('LEECH_SPLIT_SIZE','4194304000')), 4194304000)
 AS_DOCUMENT = getConfig('AS_DOCUMENT')
 if AS_DOCUMENT.lower() == 'true':
     AS_DOCUMENT = True
