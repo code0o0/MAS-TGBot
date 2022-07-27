@@ -334,7 +334,7 @@ def krakenfiles(page_link: str) -> str:
     else:
         raise DirectDownloadLinkException(
             f"Failed to acquire download URL from kraken for : {page_link}")
-  def uploadee(url: str) -> str:
+ def uploadee(url: str) -> str:
     """ uploadee direct link generator
     By https://github.com/iron-heart-x"""
     try:
