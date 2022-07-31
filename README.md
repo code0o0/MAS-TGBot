@@ -4,7 +4,7 @@ This is a Telegram Bot written in Python for mirroring files on the Internet, an
 
 ## Origin
 - qBittorrent
-- Select files from Torrent before downloading using qbittorrent
+- Select files from Torrent before downloading using qbittorrent and aria2c.
 - Leech (splitting, thumbnail for each user, setting as document or as media for each user)
 - ~~Stop duplicates for all tasks except yt-dlp tasks~~ (This function will be optimized or deleted later.)
 - Zip/Unzip G-Drive links
@@ -302,6 +302,7 @@ unzipleech - Leech and extract files
 qbleech - Leech torrent using qBittorrent
 qbzipleech - Leech torrent and upload as zip using qb
 qbunzipleech - Leech torrent and extract using qb
+btsel - select files from torrent
 clone - Copy file/folder to Drive
 count - Count file/folder of Drive
 watch - Mirror yt-dlp supported link
